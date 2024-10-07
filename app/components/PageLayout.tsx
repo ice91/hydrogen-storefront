@@ -200,6 +200,12 @@ function MobileHeader({
         >
           <IconMenu />
         </button>
+        
+        {/* 新增賣家登入選項 */}
+        <div className="seller-login">
+          <a href="/seller/login">賣家登入</a>
+        </div>
+        
         <Form
           method="get"
           action={params.locale ? `/${params.locale}/search` : '/search'}
@@ -288,6 +294,11 @@ function DesktopHeader({
               {item.title}
             </Link>
           ))}
+
+          {/* 新增賣家登入選項 */}
+          <div className="seller-login">
+            <a href="/seller/login">賣家登入</a>
+          </div>
         </nav>
       </div>
       <div className="flex items-center gap-1">

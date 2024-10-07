@@ -33,6 +33,7 @@ import {seoPayload} from '~/lib/seo.server';
 import styles from '~/styles/app.css?url';
 
 import {DEFAULT_LOCALE, parseMenu} from './lib/utils';
+import { SellerAuthProvider } from './components/SellerAuthProvider';
 
 export type RootLoader = typeof loader;
 
@@ -170,9 +171,11 @@ function Layout({children}: {children?: React.ReactNode}) {
 
 export default function App() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <SellerAuthProvider>
+      <Layout>
+        <Outlet />
+      </Layout>
+    </SellerAuthProvider>
   );
 }
 
