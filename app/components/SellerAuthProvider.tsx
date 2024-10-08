@@ -27,7 +27,7 @@ export const SellerAuthProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     // 呼叫後端 API 獲取當前用戶資訊
-    fetch('/api/auth/user')
+    fetch('/api/auth/user') // 確保路徑為 /api/auth/user
       .then(res => res.json())
       .then(data => {
         setUser(data.user);

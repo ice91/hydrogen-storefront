@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 const Login = () => {
   useEffect(() => {
     // 重定向至後端的 OIDC 登入路由
-    window.location.href = '/auth/login';
+    window.location.href = '/api/auth/login';
   }, []);
 
   return (

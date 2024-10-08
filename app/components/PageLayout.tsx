@@ -203,7 +203,9 @@ function MobileHeader({
         
         {/* 新增賣家登入選項 */}
         <div className="seller-login">
-          <a href="/seller/login">賣家登入</a>
+          <button onClick={() => window.location.href = '/seller/login'}>
+            賣家登入
+          </button>
         </div>
         
         <Form
@@ -297,7 +299,9 @@ function DesktopHeader({
 
           {/* 新增賣家登入選項 */}
           <div className="seller-login">
-            <a href="/seller/login">賣家登入</a>
+            <button onClick={() => window.location.href = '/seller/login'}>
+              賣家登入
+            </button>
           </div>
         </nav>
       </div>
