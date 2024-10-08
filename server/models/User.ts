@@ -1,8 +1,8 @@
-import { Schema, model, Document } from 'mongoose';
+import mongoose,{ Schema, model, Document } from 'mongoose';
 import { ObjectId } from 'mongodb';
 
 export interface User extends Document {
-  _id: ObjectId;
+  _id: mongoose.Types.ObjectId;
   username: string;
   email: string;
   name: string;
