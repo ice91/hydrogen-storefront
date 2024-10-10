@@ -1,0 +1,14 @@
+// app/lib/types/Session.ts
+
+import type { ObjectId } from "mongodb";
+
+export interface Session extends Timestamps {
+  _id: ObjectId;
+  sessionId: string;
+  userId: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  userAgent?: string;
+  ip?: string;
+  expiresAt: Date;
+}

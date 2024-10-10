@@ -1,0 +1,19 @@
+// app/lib/types/Product.ts
+
+import type { ObjectId } from "mongodb";
+
+export interface Product extends Timestamps {
+  _id: ObjectId;
+  userId: ObjectId;
+  title: string;
+  description: string;
+  images: string[];
+  price: number;
+  shopifyProductId?: string;
+  podProductId?: string;
+  status: 'draft' | 'published' | 'sold' | 'deleted';
+  tags?: string[];
+  categoryIds?: ObjectId[]; // 支持多分类（可选）
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -6,16 +6,16 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node16",
     "resolveJsonModule": true,
-    "module": "ES2022",
+    "module": "ESNext", // 修改為 ESNext
     "target": "ES2022",
     "strict": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "types": ["@shopify/oxygen-workers-types"],
+    "types": ["@shopify/oxygen-workers-types", "./env.d.ts"],
     "paths": {
       "~/*": ["app/*"]
     },
