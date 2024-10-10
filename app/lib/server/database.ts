@@ -11,6 +11,9 @@ import type { Earning } from "../types/Earning";
 import type { Storefront } from "../types/Storefront";
 import type { Category } from "../types/Category";
 
+/**
+ * Environment variables interface
+ */
 interface Env {
   MONGODB_URL: string;
   MONGODB_DIRECT_CONNECTION: string;
@@ -80,8 +83,8 @@ class Database {
       earnings: db.collection<Earning>("earnings"),
       storefronts: db.collection<Storefront>("storefronts"),
       categories: db.collection<Category>("categories"),
-      conversations: db.collection<any>("conversations"), // 根据实际情况定义类型
-      settings: db.collection<any>("settings"), // 根据实际情况定义类型
+      conversations: db.collection<any>("conversations"), // Define types as needed
+      settings: db.collection<any>("settings"), // Define types as needed
     };
   }
 
@@ -104,6 +107,11 @@ class Database {
 }
 
 /**
- * 导出集合实例
+ * Function to initialize and get collections
  */
-export const collections = Database.getInstance(null as any).getCollections();
+export async function getCollections(env: Env) {
+  const db = Database.getInstance(env);
+  // Wait for the connection to be established
+  await db.getClient().connect();
+  return db.getCollections();
+}

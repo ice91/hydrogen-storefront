@@ -1,13 +1,24 @@
 // app/lib/server/auth.ts
 
-import { Issuer, type BaseClient, type UserinfoResponse, type TokenSet, custom } from "openid-client";
-import { addHours, addWeeks } from "date-fns";
-import { sha256 } from "~/lib/utils/sha256";
-import { z } from "zod";
-import JSON5 from "json5";
-import { logger } from "~/lib/server/logger";
-import { collections } from "./database";
-import crypto from "crypto";
+import { Issuer, Client, TokenSet, UserinfoResponse } from 'oidc-client-ts';
+import { addHours, addWeeks } from 'date-fns';
+import { sha256 } from '~/lib/utils/sha256';
+import { z } from 'zod';
+import { logger } from '~/lib/server/logger';
+import { getCollections } from './database'; // Updated import
+
+interface Env {
+  OPENID_CLIENT_ID: string;
+  OPENID_CLIENT_SECRET: string;
+  OPENID_PROVIDER_URL: string;
+  OPENID_SCOPES: string;
+  OPENID_NAME_CLAIM: string;
+  OPENID_TOLERANCE?: string;
+  OPENID_RESOURCE: string;
+  COOKIE_NAME: string;
+  ALLOW_INSECURE_COOKIES: string;
+  // Add other env variables as needed
+}
 
 /**
  * OIDC 配置接口
@@ -16,6 +27,9 @@ export interface OIDCSettings {
   redirectURI: string;
 }
 
+/**
+ * OIDC 用户信息接口
+ */
 export interface OIDCUserInfo {
   token: TokenSet;
   userData: UserinfoResponse;
@@ -30,13 +44,13 @@ const stringWithDefault = (value: string) =>
 export const getOIDConfig = (env: Env) =>
   z
     .object({
-      CLIENT_ID: stringWithDefault(env.OPENID_CLIENT_ID || ""),
-      CLIENT_SECRET: stringWithDefault(env.OPENID_CLIENT_SECRET || ""),
-      PROVIDER_URL: stringWithDefault(env.OPENID_PROVIDER_URL || ""),
-      SCOPES: stringWithDefault(env.OPENID_SCOPES || "openid profile email"),
-      NAME_CLAIM: stringWithDefault(env.OPENID_NAME_CLAIM || "name"),
+      CLIENT_ID: stringWithDefault(env.OPENID_CLIENT_ID || ''),
+      CLIENT_SECRET: stringWithDefault(env.OPENID_CLIENT_SECRET || ''),
+      PROVIDER_URL: stringWithDefault(env.OPENID_PROVIDER_URL || ''),
+      SCOPES: stringWithDefault(env.OPENID_SCOPES || 'openid profile email'),
+      NAME_CLAIM: stringWithDefault(env.OPENID_NAME_CLAIM || 'name'),
       TOLERANCE: z.string().optional(),
-      RESOURCE: stringWithDefault(env.OPENID_RESOURCE || ""),
+      RESOURCE: stringWithDefault(env.OPENID_RESOURCE || ''),
     })
     .parse({
       CLIENT_ID: env.OPENID_CLIENT_ID,
@@ -48,7 +62,8 @@ export const getOIDConfig = (env: Env) =>
       RESOURCE: env.OPENID_RESOURCE,
     });
 
-export const requiresUser = (env: Env) => !!getOIDConfig(env).CLIENT_ID && !!getOIDConfig(env).CLIENT_SECRET;
+export const requiresUser = (env: Env) =>
+  !!getOIDConfig(env).CLIENT_ID && !!getOIDConfig(env).CLIENT_SECRET;
 
 /**
  * 生成 CSRF Token
@@ -62,13 +77,13 @@ export async function generateCsrfToken(
     expiration: addHours(new Date(), 1).getTime(),
     redirectUrl,
   };
-  const signature = await sha256(JSON.stringify(data) + "##" + sessionId);
+  const signature = await sha256(JSON.stringify(data) + '##' + sessionId);
   return Buffer.from(
     JSON.stringify({
       data,
       signature,
     })
-  ).toString("base64");
+  ).toString('base64');
 }
 
 /**
@@ -80,10 +95,12 @@ export async function validateAndParseCsrfToken(
   sessionId: string
 ): Promise<{ redirectUrl: string } | null> {
   try {
-    const decoded = Buffer.from(csrfToken, "base64").toString("utf-8");
+    const decoded = Buffer.from(csrfToken, 'base64').toString('utf-8');
     const parsed = JSON.parse(decoded);
     const { data, signature } = parsed;
-    const expectedSignature = await sha256(JSON.stringify(data) + "##" + sessionId);
+    const expectedSignature = await sha256(
+      JSON.stringify(data) + '##' + sessionId
+    );
     if (signature !== expectedSignature) {
       return null;
     }
@@ -92,7 +109,7 @@ export async function validateAndParseCsrfToken(
     }
     return { redirectUrl: data.redirectUrl };
   } catch (error) {
-    logger.error("Invalid CSRF Token", error);
+    logger.error('Invalid CSRF Token', error);
     return null;
   }
 }
@@ -101,6 +118,12 @@ export async function validateAndParseCsrfToken(
  * 查找用户
  */
 export async function findUser(env: Env, sessionId: string) {
+  const collections = await getCollections({
+    MONGODB_URL: process.env.MONGODB_URL!,
+    MONGODB_DIRECT_CONNECTION: process.env.MONGODB_DIRECT_CONNECTION!,
+    MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+  });
+
   const session = await collections.sessions.findOne({ sessionId });
   if (!session) {
     return null;
@@ -111,15 +134,24 @@ export async function findUser(env: Env, sessionId: string) {
 /**
  * 获取 OIDC 客户端
  */
-async function getOIDCClient(env: Env, settings: OIDCSettings): Promise<BaseClient> {
-  const issuer = await Issuer.discover(getOIDConfig(env).PROVIDER_URL);
-  return new issuer.Client({
-    client_id: getOIDConfig(env).CLIENT_ID,
-    client_secret: getOIDConfig(env).CLIENT_SECRET,
+async function getOIDCClient(env: Env, settings: OIDCSettings): Promise<Client> {
+  const oidConfig = getOIDConfig(env);
+
+  // Discover the OpenID Connect issuer
+  const issuer = await Issuer.discover(oidConfig.PROVIDER_URL);
+
+  // Create a new client instance
+  const client = new issuer.Client({
+    client_id: oidConfig.CLIENT_ID,
+    client_secret: oidConfig.CLIENT_SECRET,
     redirect_uris: [settings.redirectURI],
-    response_types: ["code"],
-    [custom.clock_tolerance]: getOIDConfig(env).TOLERANCE ? parseInt(getOIDConfig(env).TOLERANCE, 10) : undefined,
+    response_types: ['code'],
+    clock_tolerance: oidConfig.TOLERANCE
+      ? parseInt(oidConfig.TOLERANCE, 10)
+      : undefined,
   });
+
+  return client;
 }
 
 /**
@@ -131,12 +163,20 @@ export async function getOIDCAuthorizationUrl(
   params: { sessionId: string }
 ): Promise<string> {
   const client = await getOIDCClient(env, settings);
-  const csrfToken = await generateCsrfToken(env, params.sessionId, settings.redirectURI);
-  return client.authorizationUrl({
+  const csrfToken = await generateCsrfToken(
+    env,
+    params.sessionId,
+    settings.redirectURI
+  );
+
+  // Build the authorization URL
+  const authorizationUrl = client.authorizationUrl({
     scope: getOIDConfig(env).SCOPES,
     state: csrfToken,
     resource: getOIDConfig(env).RESOURCE || undefined,
   });
+
+  return authorizationUrl;
 }
 
 /**
@@ -150,8 +190,17 @@ export async function getOIDCUserData(
   iss?: string
 ): Promise<OIDCUserInfo> {
   const client = await getOIDCClient(env, settings);
-  const tokenSet = await client.callback(settings.redirectURI, { code, state }, { nonce: undefined });
-  const userData = await client.userinfo(tokenSet);
+
+  // Handle the callback and get tokens
+  const tokenSet = await client.callback(
+    settings.redirectURI,
+    { code, state },
+    { nonce: undefined }
+  );
+
+  // Fetch user information
+  const userData = await client.userinfo(tokenSet.access_token);
+
   return { token: tokenSet, userData };
 }
 
@@ -160,12 +209,14 @@ export async function getOIDCUserData(
  */
 export function refreshSessionCookie(env: Env, cookies: any, sessionId: string) {
   cookies.set(env.COOKIE_NAME, sessionId, {
-    path: "/",
+    path: '/',
     sameSite:
-      process.env.NODE_ENV === "development" || env.ALLOW_INSECURE_COOKIES === "true"
-        ? "lax"
-        : "none",
-    secure: process.env.NODE_ENV !== "development" && !(env.ALLOW_INSECURE_COOKIES === "true"),
+      process.env.NODE_ENV === 'development' || env.ALLOW_INSECURE_COOKIES === 'true'
+        ? 'lax'
+        : 'none',
+    secure:
+      process.env.NODE_ENV !== 'development' &&
+      !(env.ALLOW_INSECURE_COOKIES === 'true'),
     httpOnly: true,
     expires: addWeeks(new Date(), 2),
   });
@@ -175,5 +226,7 @@ export function refreshSessionCookie(env: Env, cookies: any, sessionId: string) 
  * 身份验证条件
  */
 export const authCondition = (locals: any) => {
-  return locals.user ? { userId: locals.user._id } : { sessionId: locals.sessionId, userId: { $exists: false } };
+  return locals.user
+    ? { userId: locals.user._id }
+    : { sessionId: locals.sessionId, userId: { $exists: false } };
 };
