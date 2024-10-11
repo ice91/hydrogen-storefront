@@ -1,4 +1,6 @@
-import {type HydrogenSession} from '@shopify/hydrogen';
+// app/lib/session.server.ts
+
+import { type HydrogenSession } from '@shopify/hydrogen';
 import {
   createCookieSessionStorage,
   type SessionStorage,
@@ -12,8 +14,8 @@ import {
  */
 export class AppSession implements HydrogenSession {
   public isPending = false;
-  #sessionStorage;
-  #session;
+  #sessionStorage: SessionStorage;
+  #session: Session;
 
   constructor(sessionStorage: SessionStorage, session: Session) {
     this.#sessionStorage = sessionStorage;

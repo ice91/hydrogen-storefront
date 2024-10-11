@@ -1,17 +1,24 @@
-import {useParams, Form, Await, useRouteLoaderData} from '@remix-run/react';
-import useWindowScroll from 'react-use/esm/useWindowScroll';
-import {Disclosure} from '@headlessui/react';
-import {Suspense, useEffect, useMemo} from 'react';
-import {CartForm} from '@shopify/hydrogen';
+// app/components/PageLayout.tsx
 
-import {type LayoutQuery} from 'storefrontapi.generated';
-import {Text, Heading, Section} from '~/components/Text';
-import {Link} from '~/components/Link';
-import {Cart} from '~/components/Cart';
-import {CartLoading} from '~/components/CartLoading';
-import {Input} from '~/components/Input';
-import {Drawer, useDrawer} from '~/components/Drawer';
-import {CountrySelector} from '~/components/CountrySelector';
+import {
+  useParams,
+  Form,
+  Await,
+  useRouteLoaderData,
+} from '@remix-run/react';
+import useWindowScroll from 'react-use/esm/useWindowScroll';
+import { Disclosure } from '@headlessui/react';
+import { Suspense, useEffect, useMemo } from 'react';
+import { CartForm } from '@shopify/hydrogen';
+
+import { type LayoutQuery } from 'storefrontapi.generated';
+import { Text, Heading, Section } from '~/components/Text';
+import { Link } from '~/components/Link';
+import { Cart } from '~/components/Cart';
+import { CartLoading } from '~/components/CartLoading';
+import { Input } from '~/components/Input';
+import { Drawer, useDrawer } from '~/components/Drawer';
+import { CountrySelector } from '~/components/CountrySelector';
 import {
   IconMenu,
   IconCaret,
@@ -25,9 +32,10 @@ import {
   type ChildEnhancedMenuItem,
   useIsHomePath,
 } from '~/lib/utils';
-import {useIsHydrated} from '~/hooks/useIsHydrated';
-import {useCartFetchers} from '~/hooks/useCartFetchers';
-import type {RootLoader} from '~/root';
+import { useIsHydrated } from '~/hooks/useIsHydrated';
+import { useCartFetchers } from '~/hooks/useCartFetchers';
+import type { RootLoader } from '~/root';
+import { SellerAuthProvider, useAuth } from '~/components/Marketplace/SellerAuthProvider'; // 导入 SellerAuthProvider 和 useAuth
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -37,10 +45,11 @@ type LayoutProps = {
   };
 };
 
-export function PageLayout({children, layout}: LayoutProps) {
-  const {headerMenu, footerMenu} = layout || {};
+export function PageLayout({ children, layout }: LayoutProps) {
+  const { headerMenu, footerMenu } = layout || {};
+
   return (
-    <>
+    <SellerAuthProvider> {/* 使用 SellerAuthProvider 包裹整个布局 */}
       <div className="flex flex-col min-h-screen">
         <div className="">
           <a href="#mainContent" className="sr-only">
@@ -55,11 +64,17 @@ export function PageLayout({children, layout}: LayoutProps) {
         </main>
       </div>
       {footerMenu && <Footer menu={footerMenu} />}
-    </>
+    </SellerAuthProvider>
   );
 }
 
-function Header({title, menu}: {title: string; menu?: EnhancedMenu}) {
+function Header({
+  title,
+  menu,
+}: {
+  title: string;
+  menu?: EnhancedMenu;
+}) {
   const isHome = useIsHomePath();
 
   const {
@@ -76,7 +91,10 @@ function Header({title, menu}: {title: string; menu?: EnhancedMenu}) {
 
   const addToCartFetchers = useCartFetchers(CartForm.ACTIONS.LinesAdd);
 
-  // toggle cart drawer when adding to cart
+  // 获取卖家认证状态
+  const { user, loading } = useAuth();
+
+  // 根据添加到购物车的请求状态控制购物车抽屉的打开
   useEffect(() => {
     if (isCartOpen || !addToCartFetchers.length) return;
     openCart();
@@ -93,79 +111,116 @@ function Header({title, menu}: {title: string; menu?: EnhancedMenu}) {
         title={title}
         menu={menu}
         openCart={openCart}
+        user={user}
+        loading={loading}
       />
       <MobileHeader
         isHome={isHome}
         title={title}
         openCart={openCart}
         openMenu={openMenu}
+        user={user}
+        loading={loading}
       />
     </>
   );
 }
 
-function CartDrawer({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
-  const rootData = useRouteLoaderData<RootLoader>('root');
-  if (!rootData) return null;
-
-  return (
-    <Drawer open={isOpen} onClose={onClose} heading="Cart" openFrom="right">
-      <div className="grid">
-        <Suspense fallback={<CartLoading />}>
-          <Await resolve={rootData?.cart}>
-            {(cart) => <Cart layout="drawer" onClose={onClose} cart={cart} />}
-          </Await>
-        </Suspense>
-      </div>
-    </Drawer>
-  );
-}
-
-export function MenuDrawer({
-  isOpen,
-  onClose,
+function DesktopHeader({
+  isHome,
   menu,
+  openCart,
+  title,
+  user,
+  loading,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  menu: EnhancedMenu;
+  isHome: boolean;
+  openCart: () => void;
+  menu?: EnhancedMenu;
+  title: string;
+  user: any; // 根据实际类型调整
+  loading: boolean;
 }) {
+  const params = useParams();
+  const { y } = useWindowScroll();
   return (
-    <Drawer open={isOpen} onClose={onClose} openFrom="left" heading="Menu">
-      <div className="grid">
-        <MenuMobileNav menu={menu} onClose={onClose} />
-      </div>
-    </Drawer>
-  );
-}
-
-function MenuMobileNav({
-  menu,
-  onClose,
-}: {
-  menu: EnhancedMenu;
-  onClose: () => void;
-}) {
-  return (
-    <nav className="grid gap-4 p-6 sm:gap-6 sm:px-12 sm:py-8">
-      {/* Top level menu items */}
-      {(menu?.items || []).map((item) => (
-        <span key={item.id} className="block">
-          <Link
-            to={item.to}
-            target={item.target}
-            onClick={onClose}
-            className={({isActive}) =>
-              isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
-            }
-          >
-            <Text as="span" size="copy">
+    <header
+      role="banner"
+      className={`${
+        isHome
+          ? 'bg-primary/80 dark:bg-contrast/60 text-contrast dark:text-primary shadow-darkHeader'
+          : 'bg-contrast/80 text-primary'
+      } ${
+        !isHome && y > 50 && ' shadow-lightHeader'
+      } hidden h-nav lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 px-12 py-8`}
+    >
+      <div className="flex gap-12">
+        <Link className="font-bold" to="/" prefetch="intent">
+          {title}
+        </Link>
+        <nav className="flex gap-8">
+          {/* Top level menu items */}
+          {(menu?.items || []).map((item) => (
+            <Link
+              key={item.id}
+              to={item.to}
+              target={item.target}
+              prefetch="intent"
+              className={({ isActive }) =>
+                isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
+              }
+            >
               {item.title}
-            </Text>
+            </Link>
+          ))}
+        </nav>
+      </div>
+      <div className="flex items-center gap-1">
+        <Form
+          method="get"
+          action={params.locale ? `/${params.locale}/search` : '/search'}
+          className="flex items-center gap-2"
+        >
+          <Input
+            className={
+              isHome
+                ? 'focus:border-contrast/20 dark:focus:border-primary/20'
+                : 'focus:border-primary/20'
+            }
+            type="search"
+            variant="minisearch"
+            placeholder="Search"
+            name="q"
+          />
+          <button
+            type="submit"
+            className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
+          >
+            <IconSearch />
+          </button>
+        </Form>
+        {/* 根据卖家认证状态显示不同的按钮 */}
+        {loading ? (
+          <span className="w-8 h-8"></span> // 加载状态的占位符
+        ) : user ? (
+          <Link
+            to="/seller/dashboard"
+            className="px-4 py-2 bg-green-500 text-white rounded-md"
+          >
+            卖家仪表板
           </Link>
-        </span>
-      ))}
-    </nav>
+        ) : (
+          <Link
+            to="/seller/login"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md"
+          >
+            卖家登入
+          </Link>
+        )}
+        <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
+        <CartCount isHome={isHome} openCart={openCart} />
+      </div>
+    </header>
   );
 }
 
@@ -174,14 +229,16 @@ function MobileHeader({
   isHome,
   openCart,
   openMenu,
+  user,
+  loading,
 }: {
   title: string;
   isHome: boolean;
   openCart: () => void;
   openMenu: () => void;
+  user: any; // 根据实际类型调整
+  loading: boolean;
 }) {
-  // useHeaderStyleFix(containerStyle, setContainerStyle, isHome);
-
   const params = useParams();
 
   return (
@@ -238,6 +295,24 @@ function MobileHeader({
       </Link>
 
       <div className="flex items-center justify-end w-full gap-4">
+        {/* 根据卖家认证状态显示不同的按钮 */}
+        {loading ? (
+          <span className="w-8 h-8"></span> // 加载状态的占位符
+        ) : user ? (
+          <Link
+            to="/seller/dashboard"
+            className="px-2 py-1 bg-green-500 text-white rounded-md"
+          >
+            仪表板
+          </Link>
+        ) : (
+          <Link
+            to="/seller/login"
+            className="px-2 py-1 bg-blue-500 text-white rounded-md"
+          >
+            登入
+          </Link>
+        )}
         <AccountLink className="relative flex items-center justify-center w-8 h-8" />
         <CartCount isHome={isHome} openCart={openCart} />
       </div>
@@ -245,83 +320,72 @@ function MobileHeader({
   );
 }
 
-function DesktopHeader({
-  isHome,
-  menu,
-  openCart,
-  title,
-}: {
-  isHome: boolean;
-  openCart: () => void;
-  menu?: EnhancedMenu;
-  title: string;
-}) {
-  const params = useParams();
-  const {y} = useWindowScroll();
+function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const rootData = useRouteLoaderData<RootLoader>('root');
+  if (!rootData) return null;
+
   return (
-    <header
-      role="banner"
-      className={`${
-        isHome
-          ? 'bg-primary/80 dark:bg-contrast/60 text-contrast dark:text-primary shadow-darkHeader'
-          : 'bg-contrast/80 text-primary'
-      } ${
-        !isHome && y > 50 && ' shadow-lightHeader'
-      } hidden h-nav lg:flex items-center sticky transition duration-300 backdrop-blur-lg z-40 top-0 justify-between w-full leading-none gap-8 px-12 py-8`}
-    >
-      <div className="flex gap-12">
-        <Link className="font-bold" to="/" prefetch="intent">
-          {title}
-        </Link>
-        <nav className="flex gap-8">
-          {/* Top level menu items */}
-          {(menu?.items || []).map((item) => (
-            <Link
-              key={item.id}
-              to={item.to}
-              target={item.target}
-              prefetch="intent"
-              className={({isActive}) =>
-                isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
-              }
-            >
-              {item.title}
-            </Link>
-          ))}
-        </nav>
+    <Drawer open={isOpen} onClose={onClose} heading="Cart" openFrom="right">
+      <div className="grid">
+        <Suspense fallback={<CartLoading />}>
+          <Await resolve={rootData?.cart}>
+            {(cart) => <Cart layout="drawer" onClose={onClose} cart={cart} />}
+          </Await>
+        </Suspense>
       </div>
-      <div className="flex items-center gap-1">
-        <Form
-          method="get"
-          action={params.locale ? `/${params.locale}/search` : '/search'}
-          className="flex items-center gap-2"
-        >
-          <Input
-            className={
-              isHome
-                ? 'focus:border-contrast/20 dark:focus:border-primary/20'
-                : 'focus:border-primary/20'
-            }
-            type="search"
-            variant="minisearch"
-            placeholder="Search"
-            name="q"
-          />
-          <button
-            type="submit"
-            className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5"
-          >
-            <IconSearch />
-          </button>
-        </Form>
-        <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
-        <CartCount isHome={isHome} openCart={openCart} />
-      </div>
-    </header>
+    </Drawer>
   );
 }
 
-function AccountLink({className}: {className?: string}) {
+export function MenuDrawer({
+  isOpen,
+  onClose,
+  menu,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  menu: EnhancedMenu;
+}) {
+  return (
+    <Drawer open={isOpen} onClose={onClose} openFrom="left" heading="Menu">
+      <div className="grid">
+        <MenuMobileNav menu={menu} onClose={onClose} />
+      </div>
+    </Drawer>
+  );
+}
+
+function MenuMobileNav({
+  menu,
+  onClose,
+}: {
+  menu: EnhancedMenu;
+  onClose: () => void;
+}) {
+  return (
+    <nav className="grid gap-4 p-6 sm:gap-6 sm:px-12 sm:py-8">
+      {/* Top level menu items */}
+      {(menu?.items || []).map((item) => (
+        <span key={item.id} className="block">
+          <Link
+            to={item.to}
+            target={item.target}
+            onClick={onClose}
+            className={({ isActive }) =>
+              isActive ? 'pb-1 border-b -mb-px' : 'pb-1'
+            }
+          >
+            <Text as="span" size="copy">
+              {item.title}
+            </Text>
+          </Link>
+        </span>
+      ))}
+    </nav>
+  );
+}
+
+function AccountLink({ className }: { className?: string }) {
   const rootData = useRouteLoaderData<RootLoader>('root');
   const isLoggedIn = rootData?.isLoggedIn;
 
@@ -407,7 +471,7 @@ function Badge({
   );
 }
 
-function Footer({menu}: {menu?: EnhancedMenu}) {
+function Footer({ menu }: { menu?: EnhancedMenu }) {
   const isHome = useIsHomePath();
   const itemsCount = menu
     ? menu?.items?.length + 1 > 4
@@ -435,7 +499,7 @@ function Footer({menu}: {menu?: EnhancedMenu}) {
   );
 }
 
-function FooterLink({item}: {item: ChildEnhancedMenuItem}) {
+function FooterLink({ item }: { item: ChildEnhancedMenuItem }) {
   if (item.to.startsWith('http')) {
     return (
       <a href={item.to} target={item.target} rel="noopener noreferrer">
@@ -451,7 +515,7 @@ function FooterLink({item}: {item: ChildEnhancedMenuItem}) {
   );
 }
 
-function FooterMenu({menu}: {menu?: EnhancedMenu}) {
+function FooterMenu({ menu }: { menu?: EnhancedMenu }) {
   const styles = {
     section: 'grid gap-4',
     nav: 'grid gap-2 pb-6',
@@ -462,7 +526,7 @@ function FooterMenu({menu}: {menu?: EnhancedMenu}) {
       {(menu?.items || []).map((item) => (
         <section key={item.id} className={styles.section}>
           <Disclosure>
-            {({open}) => (
+            {({ open }) => (
               <>
                 <Disclosure.Button className="text-left md:cursor-default">
                   <Heading className="flex justify-between" size="lead" as="h3">
