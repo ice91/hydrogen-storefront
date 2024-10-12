@@ -1,4 +1,4 @@
-// app/routes/seller/login.tsx
+// app/routes/($locale).seller.login.tsx
 
 import React, { useEffect } from 'react';
 import { useNavigate } from '@remix-run/react';
@@ -11,16 +11,15 @@ export default function SellerLogin() {
   useEffect(() => {
     const initiateLogin = async () => {
       try {
-        // 向后端请求生成 OIDC 授权 URL
         const response = await apiClient.get('/auth/seller/login');
         if (response.status === 200) {
           window.location.href = response.data.redirectUrl;
         } else {
-          alert('登录请求失败');
+          alert('登錄請求失敗');
         }
       } catch (error: any) {
-        console.error('启动登录流程时发生错误:', error);
-        alert('启动登录流程时发生错误');
+        console.error('啟動登入流程時發生錯誤:', error);
+        alert('啟動登入流程時發生錯誤');
       }
     };
 
@@ -30,7 +29,7 @@ export default function SellerLogin() {
   return (
     <PageLayout>
       <div className="container mx-auto p-4">
-        <p>正在跳转到登录页面...</p>
+        <p>正在跳到登入頁面...</p>
       </div>
     </PageLayout>
   );

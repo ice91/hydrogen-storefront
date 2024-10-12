@@ -1,4 +1,4 @@
-// app/routes/seller/dashboard.tsx
+// app/routes/($locale).seller.dashboard.tsx
 
 import React from 'react';
 import { useLoaderData } from '@remix-run/react';
@@ -21,11 +21,6 @@ export async function loader() {
 
   return { products: productsData.data, orders: ordersData.data };
 }
-
-export const meta = () => ({
-  title: '卖家仪表板',
-  description: '管理您的产品和查看销售数据',
-});
 
 export default function SellerDashboard() {
   const { products, orders } = useLoaderData<typeof loader>();

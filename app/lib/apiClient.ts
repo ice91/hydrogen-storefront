@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // 创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:5173/api',
 });
 
 // 请求拦截器，自动附加 JWT 令牌
