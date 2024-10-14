@@ -1,9 +1,8 @@
-// src/routes/auth.callback.tsx
+// app/routes/auth.callback.tsx
 
 import React, { useEffect } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { PageLayout } from '~/components/PageLayout';
-
 
 const AuthCallback = () => {
   const navigate = useNavigate();
