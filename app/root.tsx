@@ -6,6 +6,7 @@ import {
   type LoaderFunctionArgs,
   type AppLoadContext,
   type MetaArgs,
+  type HeadersFunction, // 新增
 } from '@shopify/remix-oxygen';
 import {
   isRouteErrorResponse,
@@ -73,6 +74,20 @@ export const links: LinksFunction = () => {
     },
     { rel: 'icon', type: 'image/svg+xml', href: favicon },
   ];
+};
+
+// 添加 headers 函数，设置 CSP
+export const headers: HeadersFunction = () => {
+  return {
+    'Content-Security-Policy':
+      "default-src 'self'; " +
+      "connect-src 'self' https://monorail-edge.shopifysvc.com https://localhost:3000 https://40ed06-12.myshopify.com http://localhost:* ws://localhost:* ws://127.0.0.1:* ws://*.tryhydrogen.dev:* https://canvastalk-867062847423.asia-east1.run.app; " +
+      "script-src 'self'; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https:; " +
+      "font-src 'self' https://fonts.gstatic.com; ",
+    // 其他头部
+  };
 };
 
 export async function loader(args: LoaderFunctionArgs) {
