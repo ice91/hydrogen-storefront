@@ -12,8 +12,10 @@ export default function SellerLogin() {
     const initiateLogin = async () => {
       try {
         const response = await apiClient.get('/auth/seller/login');
-        if (response.status === 200) {
-          window.location.href = response.data.redirectUrl;
+
+        if (response.status === 302 || response.request.responseURL) {
+          // 后端返回重定向 URL
+          window.location.href = response.request.responseURL;
         } else {
           alert('登錄請求失敗');
         }
