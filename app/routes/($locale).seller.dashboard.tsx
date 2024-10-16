@@ -1,58 +1,46 @@
-// app/routes/($locale).seller.dashboard.tsx
+// app/routes/seller/dashboard.tsx
 
-import React from 'react';
-import { useLoaderData } from '@remix-run/react';
-import { PageLayout } from '~/components/PageLayout';
-import { SellerInfo } from '~/components/Marketplace/SellerInfo';
-import { ProductList } from '~/components/Marketplace/ProductList';
-import { OrderList } from '~/components/Marketplace/OrderList';
-import apiClient from '~/lib/apiClient';
-import { useAuth } from '~/components/Marketplace/SellerAuthProvider';
-
-export async function loader() {
-  // 使用 apiClient 获取卖家的产品和订单数据
-  const [productsRes, ordersRes] = await Promise.all([
-    apiClient.get('/marketplace/products'),
-    apiClient.get('/marketplace/orders'),
-  ]);
-
-  const productsData = productsRes.data;
-  const ordersData = ordersRes.data;
-
-  return { products: productsData.data, orders: ordersData.data };
-}
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "@remix-run/react";
+import { PageLayout } from "~/components/PageLayout";
+import apiClient from "~/lib/apiClient";
 
 export default function SellerDashboard() {
-  const { products, orders } = useLoaderData<typeof loader>();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
 
-  const handleDeleteProduct = async (id: string) => {
-    const confirmDelete = confirm('确定要删除此产品吗？');
-    if (!confirmDelete) return;
-
-    try {
-      const res = await apiClient.delete(`/marketplace/products/${id}`);
-      if (res.status === 200) {
-        // 刷新页面或更新产品列表状态
-        window.location.reload();
-      } else {
-        // 处理错误
-        const errorData = res.data;
-        alert(`删除失败：${errorData.error}`);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        // 假设有一个 API 端点可以获取当前用户信息
+        const response = await apiClient.get("/user/me");
+        setUser(response.data);
+      } catch (error: any) {
+        console.error("获取用户信息时发生错误:", error);
+        // 如果未授权，重定向到登录页面
+        navigate("/seller/login");
       }
-    } catch (error: any) {
-      console.error('删除产品时发生错误:', error);
-      alert('删除产品时发生错误');
-    }
-  };
+    };
+
+    fetchUser();
+  }, [navigate]);
+
+  if (!user) {
+    return (
+      <PageLayout>
+        <div className="container mx-auto p-4">
+          <p>正在加载卖家信息...</p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">卖家仪表板</h1>
-        <SellerInfo user={user} />
-        <ProductList products={products} onDelete={handleDeleteProduct} />
-        <OrderList orders={orders} />
+        <h1>欢迎，{user.name}！</h1>
+        <p>您的电子邮件：{user.email}</p>
+        {/* 添加更多卖家相关信息和功能 */}
       </div>
     </PageLayout>
   );

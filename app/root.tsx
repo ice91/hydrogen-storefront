@@ -6,8 +6,8 @@ import {
   type LoaderFunctionArgs,
   type AppLoadContext,
   type MetaArgs,
-  type HeadersFunction, // 新增
-} from '@shopify/remix-oxygen';
+  type HeadersFunction,
+} from "@shopify/remix-oxygen";
 import {
   isRouteErrorResponse,
   Links,
@@ -18,27 +18,27 @@ import {
   useRouteLoaderData,
   useRouteError,
   type ShouldRevalidateFunction,
-} from '@remix-run/react';
+} from "@remix-run/react";
 import {
   useNonce,
   Analytics,
   getShopAnalytics,
   getSeoMeta,
   type SeoConfig,
-} from '@shopify/hydrogen';
-import invariant from 'tiny-invariant';
+} from "@shopify/hydrogen";
+import invariant from "tiny-invariant";
 
-import { PageLayout } from '~/components/PageLayout';
-import { GenericError } from '~/components/GenericError';
-import { NotFound } from '~/components/NotFound';
-import favicon from '~/assets/favicon.svg';
-import { seoPayload } from '~/lib/seo.server';
-import styles from '~/styles/app.css?url';
+import { PageLayout } from "~/components/PageLayout";
+import { GenericError } from "~/components/GenericError";
+import { NotFound } from "~/components/NotFound";
+import favicon from "~/assets/favicon.svg";
+import { seoPayload } from "~/lib/seo.server";
+import styles from "~/styles/app.css?url";
 
-import { DEFAULT_LOCALE, parseMenu } from './lib/utils';
+import { DEFAULT_LOCALE, parseMenu } from "./lib/utils";
 
 // 引入 SellerAuthProvider
-import { SellerAuthProvider } from '~/components/Marketplace/SellerAuthProvider';
+import { SellerAuthProvider } from "~/components/Marketplace/SellerAuthProvider";
 
 export type RootLoader = typeof loader;
 
@@ -49,7 +49,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   nextUrl,
 }) => {
   // revalidate when a mutation is performed e.g add to cart, login...
-  if (formMethod && formMethod !== 'GET') {
+  if (formMethod && formMethod !== "GET") {
     return true;
   }
 
@@ -63,24 +63,24 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 export const links: LinksFunction = () => {
   return [
-    { rel: 'stylesheet', href: styles },
+    { rel: "stylesheet", href: styles },
     {
-      rel: 'preconnect',
-      href: 'https://cdn.shopify.com',
+      rel: "preconnect",
+      href: "https://cdn.shopify.com",
     },
     {
-      rel: 'preconnect',
-      href: 'https://shop.app',
+      rel: "preconnect",
+      href: "https://shop.app",
     },
-    { rel: 'icon', type: 'image/svg+xml', href: favicon },
+    { rel: "icon", type: "image/svg+xml", href: favicon },
   ];
 };
 
 // 添加 headers 函数，设置 CSP
 export const headers: HeadersFunction = () => ({
-  'Content-Security-Policy':
+  "Content-Security-Policy":
     "default-src 'self'; " +
-    "connect-src 'self' https://monorail-edge.shopifysvc.com https://localhost:3000 https://40ed06-12.myshopify.com http://localhost:* ws://localhost:* ws://127.0.0.1:* ws://*.tryhydrogen.dev:* https://canvastalk-867062847423.asia-east1.run.app; " +
+    "connect-src 'self' https://monorail-edge.shopifysvc.com https://01ja74vd3j52xmzffynj6d1vdz-827ba860dd475bd1fc22.myshopify.dev https://canvastalk-867062847423.asia-east1.run.app; " +
     "script-src 'self'; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: https:; " +
@@ -149,7 +149,7 @@ export const meta = ({ data }: MetaArgs<typeof loader>) => {
 
 function Layout({ children }: { children?: React.ReactNode }) {
   const nonce = useNonce();
-  const data = useRouteLoaderData<typeof loader>('root');
+  const data = useRouteLoaderData<typeof loader>("root");
   const locale = data?.selectedLocale ?? DEFAULT_LOCALE;
 
   return (
@@ -197,11 +197,11 @@ export function ErrorBoundary({ error }: { error: Error }) {
   const routeError = useRouteError();
   const isRouteError = isRouteErrorResponse(routeError);
 
-  let title = 'Error';
-  let pageType = 'page';
+  let title = "Error";
+  let pageType = "page";
 
   if (isRouteError) {
-    title = 'Not found';
+    title = "Not found";
     if (routeError.status === 404) pageType = routeError.data || pageType;
   }
 
@@ -283,13 +283,13 @@ const LAYOUT_QUERY = `#graphql
 async function getLayoutData({ storefront, env }: AppLoadContext) {
   const data = await storefront.query(LAYOUT_QUERY, {
     variables: {
-      headerMenuHandle: 'main-menu',
-      footerMenuHandle: 'footer',
+      headerMenuHandle: "main-menu",
+      footerMenuHandle: "footer",
       language: storefront.i18n.language,
     },
   });
 
-  invariant(data, 'No data returned from Shopify API');
+  invariant(data, "No data returned from Shopify API");
 
   /*
     Modify specific links/routes (optional)
@@ -299,14 +299,14 @@ async function getLayoutData({ storefront, env }: AppLoadContext) {
       - /blog/news/blog-post -> /news/blog-post
       - /collections/all -> /products
   */
-  const customPrefixes = { BLOG: '', CATALOG: 'products' };
+  const customPrefixes = { BLOG: "", CATALOG: "products" };
 
   const headerMenu = data?.headerMenu
     ? parseMenu(
         data.headerMenu,
         data.shop.primaryDomain.url,
         env,
-        customPrefixes,
+        customPrefixes
       )
     : undefined;
 
@@ -315,7 +315,7 @@ async function getLayoutData({ storefront, env }: AppLoadContext) {
         data.footerMenu,
         data.shop.primaryDomain.url,
         env,
-        customPrefixes,
+        customPrefixes
       )
     : undefined;
 

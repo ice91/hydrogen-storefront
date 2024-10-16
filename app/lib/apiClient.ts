@@ -1,16 +1,17 @@
 // app/lib/apiClient.ts
 
-import axios from 'axios';
+import axios from "axios";
 
 // 创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: 'https://canvastalk-867062847423.asia-east1.run.app/api',
+  baseURL: "https://canvastalk-867062847423.asia-east1.run.app/api",
+  // 不使用 withCredentials，因为我们使用 Authorization header
 });
 
 // 请求拦截器，自动附加 JWT 令牌
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt'); // 或使用其他安全存储方式
+    const token = localStorage.getItem("jwt"); // 从 localStorage 获取 JWT
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
