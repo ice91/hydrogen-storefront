@@ -80,7 +80,7 @@ export const links: LinksFunction = () => {
 export const headers: HeadersFunction = () => ({
   "Content-Security-Policy":
     "default-src 'self'; " +
-    "connect-src 'self' https://monorail-edge.shopifysvc.com https://01ja74vd3j52xmzffynj6d1vdz-827ba860dd475bd1fc22.myshopify.dev https://canvastalk-867062847423.asia-east1.run.app; " +
+    "connect-src 'self' https://monorail-edge.shopifysvc.com https://01ja74vd3j52xmzffynj6d1vdz-827ba860dd475bd1fc22.myshopify.dev https://canvastalk-867062847423.asia-east1.run.app http://localhost:5173 http://localhost:3000; " +
     "script-src 'self'; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: https:; " +
