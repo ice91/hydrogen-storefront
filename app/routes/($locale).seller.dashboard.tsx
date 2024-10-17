@@ -13,7 +13,7 @@ export default function SellerDashboard() {
     const fetchUser = async () => {
       try {
         // 假设有一个 API 端点可以获取当前用户信息
-        const response = await apiClient.get("/user");
+        const response = await apiClient.get("/auth/seller/user");
         setUser(response.data);
       } catch (error: any) {
         console.error("获取用户信息时发生错误:", error);
