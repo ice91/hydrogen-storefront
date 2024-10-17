@@ -13,15 +13,14 @@ export default function SellerDashboard() {
     const fetchUser = async () => {
       try {
         // 假设有一个 API 端点可以获取当前用户信息
-        const response = await apiClient.get("/user/me");
+        const response = await apiClient.get("/user");
         setUser(response.data);
       } catch (error: any) {
         console.error("获取用户信息时发生错误:", error);
         // 如果未授权，重定向到登录页面
-        navigate("/seller/login");
+        //navigate("/seller/login");
       }
     };
-
     fetchUser();
   }, [navigate]);
 
