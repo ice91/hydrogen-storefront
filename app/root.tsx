@@ -77,15 +77,26 @@ export const links: LinksFunction = () => {
 };
 
 // 添加 headers 函数，设置 CSP
-export const headers: HeadersFunction = () => ({
-  "Content-Security-Policy":
-    "default-src 'self'; " +
-    "connect-src 'self' https://monorail-edge.shopifysvc.com https://01ja74vd3j52xmzffynj6d1vdz-827ba860dd475bd1fc22.myshopify.dev https://canvastalk-867062847423.asia-east1.run.app; " +
-    "script-src 'self'; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: https:; " +
-    "font-src 'self' https://fonts.gstatic.com;",
-});
+export const headers: HeadersFunction = () => {
+  const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL /*|| "http://localhost:5173"*/;
+  const connectSrcUrls = [
+    "'self'",
+    "https://monorail-edge.shopifysvc.com",
+    backendBaseUrl,
+  ].join(" ");
+
+  return {
+    "Content-Security-Policy": `
+      default-src 'self';
+      connect-src ${connectSrcUrls};
+      script-src 'self';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https:;
+      font-src 'self' https://fonts.gstatic.com;
+    `.replace(/\s{2,}/g, " "), // 去除多余的空格
+  };
+};
+
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte

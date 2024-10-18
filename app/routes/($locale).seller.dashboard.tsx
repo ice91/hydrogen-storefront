@@ -8,21 +8,45 @@ import apiClient from "~/lib/apiClient";
 export default function SellerDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [jwt, setJwt] = useState<string | null>(null);
 
+  // 在客户端加载 JWT
   useEffect(() => {
+    // 检查是否在浏览器环境中
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        // 如果没有 JWT，重定向到登录页面
+        navigate("/seller/login");
+      } else {
+        setJwt(token);
+        console.log(`jwt: [${token}]`);
+      }
+    }
+  }, [navigate]);
+
+  // 根据 JWT 获取用户信息
+  useEffect(() => {
+    if (!jwt) return;
+
     const fetchUser = async () => {
       try {
-        // 假设有一个 API 端点可以获取当前用户信息
-        const response = await apiClient.get("/auth/seller/user");
-        setUser(response.data);
+        const response = await apiClient.get("/auth/seller/user", {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        });
+        console.log("User data fetched:", response.data);
+        setUser(response.data.user); // 根据后端返回的数据结构，可能需要调整
       } catch (error: any) {
         console.error("获取用户信息时发生错误:", error);
         // 如果未授权，重定向到登录页面
-        //navigate("/seller/login");
+        navigate("/seller/login");
       }
     };
+
     fetchUser();
-  }, [navigate]);
+  }, [jwt, navigate]);
 
   if (!user) {
     return (

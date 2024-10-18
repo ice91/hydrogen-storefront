@@ -2,9 +2,12 @@
 
 import axios from "axios";
 
+// 使用环境变量设置 baseURL
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "http://localhost:5173";
+
 // 创建 Axios 实例
 const apiClient = axios.create({
-  baseURL: "https://canvastalk-867062847423.asia-east1.run.app/api",
+  baseURL: `${baseURL}/api`, // 确保 '/api' 被正确添加
   // 不使用 withCredentials，因为我们使用 Authorization header
 });
 

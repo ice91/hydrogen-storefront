@@ -6,7 +6,8 @@ import { PageLayout } from "~/components/PageLayout";
 export default function SellerLogin() {
   useEffect(() => {
     // 直接将浏览器重定向到后端的登录 URL
-    window.location.href = "https://canvastalk-867062847423.asia-east1.run.app/api/auth/seller/login";
+    //window.location.href = "https://canvastalk-867062847423.asia-east1.run.app/api/auth/seller/login";  
+    window.location.href = "http://localhost:5173/api/auth/seller/login";
   }, []);
 
   return (

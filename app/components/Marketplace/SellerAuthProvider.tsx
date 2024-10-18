@@ -36,6 +36,7 @@ export const SellerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem('jwt');
+      console.log(`SellerAuthProvider: token: [${token}]`);
       if (token) {
         try {
           const response = await apiClient.get('/auth/seller/user');
