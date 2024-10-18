@@ -5,9 +5,9 @@ import { PageLayout } from "~/components/PageLayout";
 
 export default function SellerLogin() {
   useEffect(() => {
-    // 直接将浏览器重定向到后端的登录 URL
-    //window.location.href = "https://canvastalk-867062847423.asia-east1.run.app/api/auth/seller/login";  
-    window.location.href = "http://localhost:5173/api/auth/seller/login";
+    // 使用环境变量构建后端登录 URL
+    const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL || "http://localhost:5173";
+    window.location.href = `${backendBaseUrl}/api/auth/seller/login`;
   }, []);
 
   return (
