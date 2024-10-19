@@ -61,9 +61,10 @@ export default function SellerDashboard() {
   return (
     <PageLayout>
       <div className="container mx-auto p-4">
-        <h1>欢迎，{user.name}！</h1>
-        <p>您的电子邮件：{user.email}</p>
-        {/* 添加更多卖家相关信息和功能 */}
+        <h1>Welcome, {user.name}!</h1>
+        <p>Your email: {user.email}</p>
+        <p>Points: {user.points}</p>
+        <p>Referral Code: {user.code}</p>
       </div>
     </PageLayout>
   );
