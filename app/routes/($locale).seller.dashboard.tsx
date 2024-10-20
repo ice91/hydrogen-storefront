@@ -19,7 +19,7 @@ export default function SellerDashboard() {
       } catch (error: any) {
         console.error("獲取用戶信息時發生錯誤:", error);
         // 如果未授權，重定向到登錄頁面
-        navigate("/seller/login");
+        //navigate("/seller/login");
       }
     };
     fetchUser();

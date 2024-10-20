@@ -179,12 +179,14 @@ function Layout({ children }: { children?: React.ReactNode }) {
             shop={data.shop}
             consent={data.consent}
           >
-            <PageLayout
-              key={`${locale.language}-${locale.country}`}
-              layout={data.layout}
-            >
-              {children}
-            </PageLayout>
+            <SellerAuthProvider>
+              <PageLayout
+                key={`${locale.language}-${locale.country}`}
+                layout={data.layout}
+              >
+                {children}
+              </PageLayout>
+            </SellerAuthProvider>
           </Analytics.Provider>
         ) : (
           children
@@ -332,3 +334,5 @@ async function getLayoutData({ storefront, env }: AppLoadContext) {
 
   return { shop: data.shop, headerMenu, footerMenu };
 }
+
+
