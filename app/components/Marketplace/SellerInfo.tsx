@@ -1,36 +1,63 @@
-// app/components/Marketplace/SellerInfo.tsx
+// app/components/Marketplace/SellerAuthProvider.tsx
 
-import React from 'react';
-import { useAuth } from './SellerAuthProvider';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import apiClient from '~/lib/apiClient';
 
-export const SellerInfo: React.FC = () => {
-  const { user, loading } = useAuth();
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  name: string;
+  roles: string[];
+  avatarUrl?: string;
+  storefrontUrl?: string;
+  earnings?: number;
+  paymentDetails?: any;
+  createdAt: string;
+  updatedAt: string;
+}
 
-  if (loading) {
-    return <p>加载中...</p>;
-  }
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  setUser: (user: User | null) => void;
+}
 
-  if (!user) {
-    return <p>未登录为卖家。</p>;
-  }
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  setUser: () => {},
+});
+
+export const SellerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await apiClient.get('/auth/seller/user');
+        if (response.status === 200) {
+          setUser(response.data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error: any) {
+        console.error('获取用户信息时发生错误:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
-    <div className="seller-info p-4 bg-gray-100 rounded-md mb-4">
-      <h2 className="text-xl font-semibold mb-2">卖家信息</h2>
-      <p><strong>姓名：</strong> {user.name}</p>
-      <p><strong>邮箱：</strong> {user.email}</p>
-      {user.storefrontUrl && (
-        <p>
-          <strong>店铺链接：</strong> 
-          <a href={user.storefrontUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-            {user.storefrontUrl}
-          </a>
-        </p>
-      )}
-      {typeof user.earnings === 'number' && (
-        <p><strong>收益：</strong> ${user.earnings.toFixed(2)}</p>
-      )}
-      {/* 根据需要添加更多卖家信息 */}
-    </div>
+    <AuthContext.Provider value={{ user, loading, setUser }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);
