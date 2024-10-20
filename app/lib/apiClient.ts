@@ -2,32 +2,23 @@
 
 import axios from "axios";
 
-// 使用环境变量设置 baseURL
-const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "http://localhost:5173";
+// 使用環境變量設置 baseURL
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || "https://localhost:5173";
 
-// 创建 Axios 实例
+// 創建 Axios 實例
 const apiClient = axios.create({
-  baseURL: `${baseURL}/api`, // 确保 '/api' 被正确添加
-  // 不使用 withCredentials，因为我们使用 Authorization header
+  baseURL: `${baseURL}/api`, // 確保 '/api' 被正確添加
+  withCredentials: true, // 確保請求攜帶憑證（Cookie）
 });
 
-// 请求拦截器，自动附加 JWT 令牌
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("jwt"); // 从 localStorage 获取 JWT
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// 移除請求攔截器
+// 因為我們不再使用 Authorization header
 
 // 响应拦截器，可根据需要添加
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 处理响应错误，例如未授权
+    // 處理響應錯誤，例如未授權
     return Promise.reject(error);
   }
 );
