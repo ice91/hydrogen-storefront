@@ -6,8 +6,9 @@ import {
   type LoaderFunctionArgs,
   type AppLoadContext,
   type MetaArgs,
-  type HeadersFunction,
-} from "@shopify/remix-oxygen";
+  // 移除 HeadersFunction 导入
+  // type HeadersFunction,
+} from '@shopify/remix-oxygen';
 import {
   isRouteErrorResponse,
   Links,
@@ -18,27 +19,27 @@ import {
   useRouteLoaderData,
   useRouteError,
   type ShouldRevalidateFunction,
-} from "@remix-run/react";
+} from '@remix-run/react';
 import {
   useNonce,
   Analytics,
   getShopAnalytics,
   getSeoMeta,
   type SeoConfig,
-} from "@shopify/hydrogen";
-import invariant from "tiny-invariant";
+} from '@shopify/hydrogen';
+import invariant from 'tiny-invariant';
 
-import { PageLayout } from "~/components/PageLayout";
-import { GenericError } from "~/components/GenericError";
-import { NotFound } from "~/components/NotFound";
-import favicon from "~/assets/favicon.svg";
-import { seoPayload } from "~/lib/seo.server";
-import styles from "~/styles/app.css?url";
+import { PageLayout } from '~/components/PageLayout';
+import { GenericError } from '~/components/GenericError';
+import { NotFound } from '~/components/NotFound';
+import favicon from '~/assets/favicon.svg';
+import { seoPayload } from '~/lib/seo.server';
+import styles from '~/styles/app.css?url';
 
-import { DEFAULT_LOCALE, parseMenu } from "./lib/utils";
+import { DEFAULT_LOCALE, parseMenu } from './lib/utils';
 
 // 引入 SellerAuthProvider
-import { SellerAuthProvider } from "~/components/Marketplace/SellerAuthProvider";
+import { SellerAuthProvider } from '~/components/Marketplace/SellerAuthProvider';
 
 export type RootLoader = typeof loader;
 
@@ -49,7 +50,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   nextUrl,
 }) => {
   // revalidate when a mutation is performed e.g add to cart, login...
-  if (formMethod && formMethod !== "GET") {
+  if (formMethod && formMethod !== 'GET') {
     return true;
   }
 
@@ -63,30 +64,18 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 export const links: LinksFunction = () => {
   return [
-    { rel: "stylesheet", href: styles },
+    { rel: 'stylesheet', href: styles },
     {
-      rel: "preconnect",
-      href: "https://cdn.shopify.com",
+      rel: 'preconnect',
+      href: 'https://cdn.shopify.com',
     },
     {
-      rel: "preconnect",
-      href: "https://shop.app",
+      rel: 'preconnect',
+      href: 'https://shop.app',
     },
-    { rel: "icon", type: "image/svg+xml", href: favicon },
+    { rel: 'icon', type: 'image/svg+xml', href: favicon },
   ];
 };
-
-// 添加 headers 函数，设置 CSP
-export const headers: HeadersFunction = () => ({
-  "Content-Security-Policy":
-    "default-src 'self'; " +
-    "connect-src 'self' https://monorail-edge.shopifysvc.com https://40ed06-12.myshopify.com https://canvastalk-867062847423.asia-east1.run.app; " +
-    "script-src 'self'; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: https:; " +
-    "font-src 'self' https://fonts.gstatic.com;",
-});
-
 
 
 export async function loader(args: LoaderFunctionArgs) {
