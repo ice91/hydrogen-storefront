@@ -35,22 +35,19 @@ export const SellerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('jwt');
-      console.log(`SellerAuthProvider: token: [${token}]`);
-      if (token) {
-        try {
-          const response = await apiClient.get('/auth/seller/user');
-          if (response.status === 200) {
-            setUser(response.data.user);
-          } else {
-            setUser(null);
-          }
-        } catch (error: any) {
-          console.error('获取用户信息时发生错误:', error);
+      try {
+        const response = await apiClient.get('/auth/seller/user');
+        if (response.status === 200) {
+          setUser(response.data.user);
+        } else {
           setUser(null);
         }
+      } catch (error: any) {
+        console.error('获取用户信息时发生错误:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchUser();
