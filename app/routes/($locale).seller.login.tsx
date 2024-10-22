@@ -5,15 +5,15 @@ import { PageLayout } from "~/components/PageLayout";
 
 export default function SellerLogin() {
   useEffect(() => {
-    // 使用環境變量構建後端登錄 URL
-    const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL || "https://localhost:5173";
+    // 使用环境变量构建后端登录 URL
+    const backendBaseUrl = import.meta.env.VITE_BACKEND_BASE_URL || "http://localhost:5173";
     window.location.href = `${backendBaseUrl}/api/auth/seller/login`;
   }, []);
 
   return (
     <PageLayout>
       <div className="container mx-auto p-4">
-        <p>正在跳轉到登錄頁面...</p>
+        <p>Redirecting to login page...</p>
       </div>
     </PageLayout>
   );
