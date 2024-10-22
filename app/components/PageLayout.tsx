@@ -207,14 +207,14 @@ function DesktopHeader({
             to="/seller/dashboard"
             className="px-4 py-2 bg-green-500 text-white rounded-md"
           >
-            Seller Dashboard
+            Artist Dashboard
           </Link>
         ) : (
           <Link
             to="/seller/login"
             className="px-4 py-2 bg-blue-500 text-white rounded-md"
           >
-            Seller Login
+            Artist Login
           </Link>
         )}
         <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
