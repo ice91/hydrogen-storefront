@@ -303,14 +303,14 @@ function MobileHeader({
             to="/seller/dashboard"
             className="px-2 py-1 bg-green-500 text-white rounded-md"
           >
-            仪表板
+            Dashboard
           </Link>
         ) : (
           <Link
             to="/seller/login"
             className="px-2 py-1 bg-blue-500 text-white rounded-md"
           >
-            登入
+            Login
           </Link>
         )}
         <AccountLink className="relative flex items-center justify-center w-8 h-8" />
