@@ -43,7 +43,7 @@ export const SellerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           setUser(null);
         }
       } catch (error: any) {
-        console.error('获取用户信息时发生错误:', error);
+        console.error('An error occurred while retrieving user information:', error);
         setUser(null);
       } finally {
         setLoading(false);

@@ -29,7 +29,7 @@ export default function SellerDashboard() {
     return (
       <PageLayout>
         <div className="container mx-auto p-4">
-          <p>正在加載賣家信息...</p>
+          <p>Loading seller information...</p>
         </div>
       </PageLayout>
     );
