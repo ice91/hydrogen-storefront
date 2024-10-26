@@ -35,7 +35,8 @@ import {
 import { useIsHydrated } from '~/hooks/useIsHydrated';
 import { useCartFetchers } from '~/hooks/useCartFetchers';
 import type { RootLoader } from '~/root';
-import { SellerAuthProvider, useAuth } from '~/components/Marketplace/SellerAuthProvider'; // 导入 SellerAuthProvider 和 useAuth
+import { SellerAuthProvider, useSellerAuth } from '~/components/Marketplace/SellerAuthProvider'; // 导入 SellerAuthProvider 和 useSellerAuth
+import { User } from '~/lib/type'; // 导入 User 类型
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -92,7 +93,7 @@ function Header({
   const addToCartFetchers = useCartFetchers(CartForm.ACTIONS.LinesAdd);
 
   // 获取卖家认证状态
-  const { user, loading } = useAuth();
+  const { user, loading } = useSellerAuth();
 
   // 根据添加到购物车的请求状态控制购物车抽屉的打开
   useEffect(() => {
@@ -138,7 +139,7 @@ function DesktopHeader({
   openCart: () => void;
   menu?: EnhancedMenu;
   title: string;
-  user: any; // 根据实际类型调整
+  user: User | null;
   loading: boolean;
 }) {
   const params = useParams();
@@ -202,19 +203,19 @@ function DesktopHeader({
         {/* 根据卖家认证状态显示不同的按钮 */}
         {loading ? (
           <span className="w-8 h-8"></span> // 加载状态的占位符
-        ) : user ? (
+        ) : user && user.roles.includes('seller') ? (
           <Link
             to="/seller/dashboard"
             className="px-4 py-2 bg-green-500 text-white rounded-md"
           >
-            Artist Dashboard
+            卖家中心
           </Link>
         ) : (
           <Link
             to="/seller/login"
             className="px-4 py-2 bg-blue-500 text-white rounded-md"
           >
-            Artist Login
+            卖家登录
           </Link>
         )}
         <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
@@ -236,7 +237,7 @@ function MobileHeader({
   isHome: boolean;
   openCart: () => void;
   openMenu: () => void;
-  user: any; // 根据实际类型调整
+  user: User | null;
   loading: boolean;
 }) {
   const params = useParams();
@@ -298,19 +299,19 @@ function MobileHeader({
         {/* 根据卖家认证状态显示不同的按钮 */}
         {loading ? (
           <span className="w-8 h-8"></span> // 加载状态的占位符
-        ) : user ? (
+        ) : user && user.roles.includes('seller') ? (
           <Link
             to="/seller/dashboard"
             className="px-2 py-1 bg-green-500 text-white rounded-md"
           >
-            Dashboard
+            卖家中心
           </Link>
         ) : (
           <Link
             to="/seller/login"
             className="px-2 py-1 bg-blue-500 text-white rounded-md"
           >
-            Login
+            卖家登录
           </Link>
         )}
         <AccountLink className="relative flex items-center justify-center w-8 h-8" />
