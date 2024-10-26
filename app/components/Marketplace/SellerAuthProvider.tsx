@@ -44,7 +44,9 @@ export const SellerAuthProvider: React.FC<{ children: ReactNode }> = ({ children
   const logout = async () => {
     try {
       await apiClient.post('/auth/seller/logout');
+      sessionStorage.removeItem('jwtToken');
       setUser(null);
+      window.location.href = '/seller/login';
     } catch (error) {
       console.error('退出登录时出错：', error);
     }

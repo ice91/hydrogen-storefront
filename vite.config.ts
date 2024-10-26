@@ -18,6 +18,7 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  base: '/', // 确保 base 设置为根路径
   ssr: {
     optimizeDeps: {
       include: ['typographic-base'],
