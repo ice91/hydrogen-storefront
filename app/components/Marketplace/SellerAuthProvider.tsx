@@ -40,11 +40,10 @@ export const SellerAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     fetchUser();
   }, []);
 
-  // 退出登录
+    // 退出登录
   const logout = async () => {
     try {
       await apiClient.post('/auth/seller/logout');
-      sessionStorage.removeItem('jwtToken');
       setUser(null);
       window.location.href = '/seller/login';
     } catch (error) {
