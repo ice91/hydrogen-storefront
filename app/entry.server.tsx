@@ -38,12 +38,12 @@ export default async function handleRequest(
       'https://monorail-edge.shopifysvc.com',
       ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:*'] : []),
     ],
-    styleSrc: [
+    /*styleSrc: [
       "'self'",
       "'unsafe-inline'",
       'https://cdn.shopify.com',
       context.env.VITE_BACKEND_BASE_URL, // 添加后端域名
-    ],
+    ],*/
   });
 
   const body = await renderToReadableStream(
