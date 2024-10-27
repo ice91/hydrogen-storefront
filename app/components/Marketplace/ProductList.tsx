@@ -9,7 +9,7 @@ const ProductList: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await apiClient.get('/products');
+      const response = await apiClient.get('/products/mine');
       setProducts(response.data.products);
     } catch (err: any) {
       console.error('获取产品列表时出错：', err);
