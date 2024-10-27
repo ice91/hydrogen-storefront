@@ -22,8 +22,8 @@ export default async function handleRequest(
       "'self'",
       'https://monorail-edge.shopifysvc.com',
       'https://40ed06-12.myshopify.com',
-      //'https://canvastalk-867062847423.asia-east1.run.app',
-      context.env.VITE_BACKEND_BASE_URL, // 如果有其他需要的域名，可以继续添加
+      'https://canvastalk-867062847423.asia-east1.run.app',
+      //context.env.VITE_BACKEND_BASE_URL, // 如果有其他需要的域名，可以继续添加
     ],
     scriptSrc: [
       "'self'",
@@ -31,8 +31,8 @@ export default async function handleRequest(
       'https://shopify.com',
       'https://www.google-analytics.com',
       'https://www.googletagmanager.com',
-      context.env.VITE_BACKEND_BASE_URL,
-      //'https://canvastalk-867062847423.asia-east1.run.app',
+      //context.env.VITE_BACKEND_BASE_URL,
+      'https://canvastalk-867062847423.asia-east1.run.app',
       'https://40ed06-12.myshopify.com',
       //'https://01ja74vd3j52xmzffynj6d1vdz-827ba860dd475bd1fc22.myshopify.dev',
       'https://monorail-edge.shopifysvc.com',
