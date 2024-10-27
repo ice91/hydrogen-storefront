@@ -16,7 +16,7 @@ const OrderList: React.FC = () => {
   const fetchOrders = async () => {
     if (!user) return;
     try {
-      const response = await apiClient.get('/orders/mine');
+      const response = await apiClient.get('/orders');
       setOrders(response.data.orders);
     } catch (err) {
       console.error('获取订单列表时出错：', err);
