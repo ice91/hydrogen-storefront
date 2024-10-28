@@ -40,7 +40,7 @@ export const SellerAuthProvider: React.FC<{ children: ReactNode }> = ({ children
     fetchUser();
   }, []);
 
-    // 退出登录
+// 退出登录
   const logout = async () => {
     try {
       await apiClient.post('/auth/seller/logout');
@@ -48,6 +48,8 @@ export const SellerAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       window.location.href = '/seller/login';
     } catch (error) {
       console.error('退出登录时出错：', error);
+      // 提供用户友好的错误提示
+      alert('退出登录失败，请稍后再试。');
     }
   };
 
