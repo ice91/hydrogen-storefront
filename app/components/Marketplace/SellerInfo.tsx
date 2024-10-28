@@ -19,7 +19,7 @@ const SellerInfo: React.FC = () => {
   const fetchSellerStats = async () => {
     if (!user) return;
     try {
-      const response = await apiClient.get('/seller/stats');
+      const response = await apiClient.get('/auth/seller/stats');
       setSellerStats(response.data.stats);
     } catch (err) {
       console.error('获取卖家统计数据时出错：', err);
