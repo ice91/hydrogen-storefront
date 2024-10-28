@@ -21,9 +21,9 @@ const SellerDashboard: React.FC = () => {
     );
   }
 
-  if (!user || !user.roles.includes('seller')) {
+  /*if (!user || !user.roles.includes('seller')) {
     return <Navigate to="/seller/login" replace />;
-  }
+  }*/
 
   return (
     <PageLayout>
