@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
-//import { ClientOnly } from 'remix-utils'; // 修改導入路徑
-import { ClientOnly } from '@shopify/hydrogen';
+import { ClientOnly } from '~/components/ClientOnly'; // 使用自定義的 ClientOnly
+import { RichTextEditor } from '~/components/RichTextEditor'; // 使用 RichTextEditor
 import { Product } from '~/lib/type'; // 確保你有正確定義 Product 類型
 
 type ProductFormProps = {
@@ -123,23 +123,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
             {/* 描述 */}
             <div>
               <label className="block text-sm font-medium">描述</label>
-              <ClientOnly fallback={<textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              />}>
-                {() => {
-                  const ReactQuill = require('react-quill');
-                  require('react-quill/dist/quill.snow.css');
-                  return (
-                    <ReactQuill
-                      value={description}
-                      onChange={setDescription}
-                      className="mt-1"
-                      theme="snow"
-                    />
-                  );
-                }}
+              <ClientOnly
+                fallback={
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                }
+              >
+                <RichTextEditor value={description} onChange={setDescription} />
               </ClientOnly>
             </div>
             {/* 標籤 */}
