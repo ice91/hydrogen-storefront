@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
-//import { ClientOnly } from 'remix-utils'; // 修改導入路徑
-import { ClientOnly } from '@shopify/hydrogen';
+import { ClientOnly } from 'remix-utils'; // 修改導入路徑
+//import { ClientOnly } from '@shopify/hydrogen';
 import { Product } from '~/lib/type'; // 確保你有正確定義 Product 類型
 
 type ProductFormProps = {
