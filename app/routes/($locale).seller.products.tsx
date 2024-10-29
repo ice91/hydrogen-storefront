@@ -1,11 +1,11 @@
-// app/routes/($locale).seller.products.new.tsx
+// app/routes/($locale)/seller/products/index.tsx
 
 import React from 'react';
-import ProductForm from '~/components/Marketplace/ProductForm';
+import ProductList from '~/components/Marketplace/ProductList';
 import { useSellerAuth } from '~/components/Marketplace/SellerAuthProvider';
 import { Navigate } from '@remix-run/react';
 
-const NewProduct: React.FC = () => {
+const SellerProducts: React.FC = () => {
   const { user, loading } = useSellerAuth();
 
   if (loading) {
@@ -22,9 +22,9 @@ const NewProduct: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <ProductForm />
+      <ProductList />
     </div>
   );
 };
 
-export default NewProduct;
+export default SellerProducts;

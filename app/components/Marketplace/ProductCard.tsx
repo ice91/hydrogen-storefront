@@ -48,7 +48,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         <div className="mt-4 flex justify-between items-center">
           <div className="flex space-x-2">
             <Link
-              to={`/seller/products/${product._id}/edit`}
+              to={`/seller/editproducts/${product._id}`}
               className="px-3 py-1 bg-blue-500 text-white text-sm rounded-md"
             >
               編輯

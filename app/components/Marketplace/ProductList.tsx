@@ -37,7 +37,7 @@ const ProductList: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold">我的產品</h2>
         <Link
-          to="/seller/products/new"
+          to="/seller/newproducts/"
           className="px-4 py-2 bg-blue-500 text-white rounded-md"
         >
           創建新產品
