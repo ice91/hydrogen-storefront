@@ -20,11 +20,13 @@ export default defineConfig({
   ],
   base: '/', // 确保 base 设置为根路径
   ssr: {
+    external: ['react-quill'], // 將 react-quill 標記為外部依賴
     optimizeDeps: {
-      include: ['react-quill', 'typographic-base'],
+      include: ['typographic-base'],
     },
   },
   optimizeDeps: {
+    exclude: ['react-quill'], // 排除 react-quill 從依賴優化中
     include: [
       'clsx',
       '@headlessui/react',
