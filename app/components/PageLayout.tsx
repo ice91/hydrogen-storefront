@@ -1,5 +1,6 @@
 // app/components/PageLayout.tsx
 
+import React, { useEffect } from 'react';
 import {
   useParams,
   Form,
@@ -7,8 +8,8 @@ import {
   useRouteLoaderData,
 } from '@remix-run/react';
 import useWindowScroll from 'react-use/esm/useWindowScroll';
-import { Disclosure } from '@headlessui/react';
-import { Suspense, useEffect, useMemo } from 'react';
+import { Menu } from '@headlessui/react'; // 引入 Menu 組件
+import { Suspense } from 'react';
 import { CartForm } from '@shopify/hydrogen';
 
 import { type LayoutQuery } from 'storefrontapi.generated';
@@ -35,8 +36,8 @@ import {
 import { useIsHydrated } from '~/hooks/useIsHydrated';
 import { useCartFetchers } from '~/hooks/useCartFetchers';
 import type { RootLoader } from '~/root';
-import { SellerAuthProvider, useSellerAuth } from '~/components/Marketplace/SellerAuthProvider'; // 导入 SellerAuthProvider 和 useSellerAuth
-import { User } from '~/lib/type'; // 导入 User 类型
+import { useSellerAuth } from '~/components/Marketplace/SellerAuthProvider'; // 使用 useSellerAuth
+import { User } from '~/lib/type'; // 引入 User 類型
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -50,22 +51,18 @@ export function PageLayout({ children, layout }: LayoutProps) {
   const { headerMenu, footerMenu } = layout || {};
 
   return (
-    <SellerAuthProvider> {/* 使用 SellerAuthProvider 包裹整个布局 */}
-      <div className="flex flex-col min-h-screen">
-        <div className="">
-          <a href="#mainContent" className="sr-only">
-            Skip to content
-          </a>
-        </div>
-        {headerMenu && layout?.shop.name && (
-          <Header title={layout.shop.name} menu={headerMenu} />
-        )}
-        <main role="main" id="mainContent" className="flex-grow">
-          {children}
-        </main>
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <a href="#mainContent" className="sr-only">
+        跳至內容
+      </a>
+      {headerMenu && layout?.shop.name && (
+        <Header title={layout.shop.name} menu={headerMenu} />
+      )}
+      <main role="main" id="mainContent" className="flex-grow">
+        {children}
+      </main>
       {footerMenu && <Footer menu={footerMenu} />}
-    </SellerAuthProvider>
+    </div>
   );
 }
 
@@ -92,10 +89,10 @@ function Header({
 
   const addToCartFetchers = useCartFetchers(CartForm.ACTIONS.LinesAdd);
 
-  // 获取卖家认证状态
+  // 獲取賣家認證狀態
   const { user, loading } = useSellerAuth();
 
-  // 根据添加到购物车的请求状态控制购物车抽屉的打开
+  // 根據添加到購物車的請求狀態控制購物車抽屜的打開
   useEffect(() => {
     if (isCartOpen || !addToCartFetchers.length) return;
     openCart();
@@ -144,6 +141,72 @@ function DesktopHeader({
 }) {
   const params = useParams();
   const { y } = useWindowScroll();
+
+  // 將賣家按鈕的條件渲染提取到變數中
+  let sellerButton;
+
+  if (loading) {
+    sellerButton = <span className="w-8 h-8"></span>; // 加載狀態的佔位符
+  } else if (user && user.roles.includes('seller')) {
+    sellerButton = (
+      <Menu as="div" className="relative inline-block text-left">
+        <Menu.Button className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md">
+          賣家中心
+          <IconCaret direction="down" />
+        </Menu.Button>
+        <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white dark:bg-gray-800 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/seller/dashboard"
+                  className={`${
+                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                >
+                  儀表盤
+                </Link>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/seller/products"
+                  className={`${
+                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                >
+                  我的產品
+                </Link>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/seller/newproducts"
+                  className={`${
+                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                >
+                  創建產品
+                </Link>
+              )}
+            </Menu.Item>
+          </div>
+        </Menu.Items>
+      </Menu>
+    );
+  } else {
+    sellerButton = (
+      <Link
+        to="/seller/login"
+        className="px-4 py-2 bg-blue-500 text-white rounded-md"
+      >
+        賣家登入
+      </Link>
+    );
+  }
+
   return (
     <header
       role="banner"
@@ -160,7 +223,7 @@ function DesktopHeader({
           {title}
         </Link>
         <nav className="flex gap-8">
-          {/* Top level menu items */}
+          {/* 頂部菜單項 */}
           {(menu?.items || []).map((item) => (
             <Link
               key={item.id}
@@ -190,7 +253,7 @@ function DesktopHeader({
             }
             type="search"
             variant="minisearch"
-            placeholder="Search"
+            placeholder="搜尋"
             name="q"
           />
           <button
@@ -200,30 +263,16 @@ function DesktopHeader({
             <IconSearch />
           </button>
         </Form>
-        {/* 根据卖家认证状态显示不同的按钮 */}
-        {loading ? (
-          <span className="w-8 h-8"></span> // 加载状态的占位符
-        ) : user && user.roles.includes('seller') ? (
-          <Link
-            to="/seller/dashboard"
-            className="px-4 py-2 bg-green-500 text-white rounded-md"
-          >
-            卖家中心
-          </Link>
-        ) : (
-          <Link
-            to="/seller/login"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          >
-            卖家登录
-          </Link>
-        )}
+        {/* 賣家按鈕 */}
+        {sellerButton}
         <AccountLink className="relative flex items-center justify-center w-8 h-8 focus:ring-primary/5" />
         <CartCount isHome={isHome} openCart={openCart} />
       </div>
     </header>
   );
 }
+
+// MobileHeader 與 DesktopHeader 類似，也需要修改條件渲染的部分
 
 function MobileHeader({
   title,
@@ -241,6 +290,71 @@ function MobileHeader({
   loading: boolean;
 }) {
   const params = useParams();
+
+  // 將賣家按鈕的條件渲染提取到變數中
+  let sellerButton;
+
+  if (loading) {
+    sellerButton = <span className="w-8 h-8"></span>; // 加載狀態的佔位符
+  } else if (user && user.roles.includes('seller')) {
+    sellerButton = (
+      <Menu as="div" className="relative inline-block text-left">
+        <Menu.Button className="flex items-center px-2 py-1 bg-green-500 text-white rounded-md">
+          賣家中心
+          <IconCaret direction="down" />
+        </Menu.Button>
+        <Menu.Items className="absolute right-0 mt-2 w-40 origin-top-right bg-white dark:bg-gray-800 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/seller/dashboard"
+                  className={`${
+                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                >
+                  儀表盤
+                </Link>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/seller/products"
+                  className={`${
+                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                >
+                  我的產品
+                </Link>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to="/seller/newproducts"
+                  className={`${
+                    active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                  } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                >
+                  創建產品
+                </Link>
+              )}
+            </Menu.Item>
+          </div>
+        </Menu.Items>
+      </Menu>
+    );
+  } else {
+    sellerButton = (
+      <Link
+        to="/seller/login"
+        className="px-2 py-1 bg-blue-500 text-white rounded-md"
+      >
+        賣家登入
+      </Link>
+    );
+  }
 
   return (
     <header
@@ -277,7 +391,7 @@ function MobileHeader({
             }
             type="search"
             variant="minisearch"
-            placeholder="Search"
+            placeholder="搜尋"
             name="q"
           />
         </Form>
@@ -296,24 +410,8 @@ function MobileHeader({
       </Link>
 
       <div className="flex items-center justify-end w-full gap-4">
-        {/* 根据卖家认证状态显示不同的按钮 */}
-        {loading ? (
-          <span className="w-8 h-8"></span> // 加载状态的占位符
-        ) : user && user.roles.includes('seller') ? (
-          <Link
-            to="/seller/dashboard"
-            className="px-2 py-1 bg-green-500 text-white rounded-md"
-          >
-            卖家中心
-          </Link>
-        ) : (
-          <Link
-            to="/seller/login"
-            className="px-2 py-1 bg-blue-500 text-white rounded-md"
-          >
-            卖家登录
-          </Link>
-        )}
+        {/* 賣家按鈕 */}
+        {sellerButton}
         <AccountLink className="relative flex items-center justify-center w-8 h-8" />
         <CartCount isHome={isHome} openCart={openCart} />
       </div>
@@ -326,7 +424,7 @@ function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
   if (!rootData) return null;
 
   return (
-    <Drawer open={isOpen} onClose={onClose} heading="Cart" openFrom="right">
+    <Drawer open={isOpen} onClose={onClose} heading="購物車" openFrom="right">
       <div className="grid">
         <Suspense fallback={<CartLoading />}>
           <Await resolve={rootData?.cart}>
@@ -348,7 +446,7 @@ export function MenuDrawer({
   menu: EnhancedMenu;
 }) {
   return (
-    <Drawer open={isOpen} onClose={onClose} openFrom="left" heading="Menu">
+    <Drawer open={isOpen} onClose={onClose} openFrom="left" heading="選單">
       <div className="grid">
         <MenuMobileNav menu={menu} onClose={onClose} />
       </div>
@@ -365,7 +463,7 @@ function MenuMobileNav({
 }) {
   return (
     <nav className="grid gap-4 p-6 sm:gap-6 sm:px-12 sm:py-8">
-      {/* Top level menu items */}
+      {/* 頂部菜單項 */}
       {(menu?.items || []).map((item) => (
         <span key={item.id} className="block">
           <Link
@@ -437,7 +535,7 @@ function Badge({
 }) {
   const isHydrated = useIsHydrated();
 
-  const BadgeCounter = useMemo(
+  const BadgeCounter = React.useMemo(
     () => (
       <>
         <IconBag />
@@ -493,8 +591,7 @@ function Footer({ menu }: { menu?: EnhancedMenu }) {
       <div
         className={`self-end pt-8 opacity-50 md:col-span-2 lg:col-span-${itemsCount}`}
       >
-        &copy; {new Date().getFullYear()} / Shopify, Inc. Hydrogen is an MIT
-        Licensed Open Source project.
+        &copy; {new Date().getFullYear()} / Shopify, Inc. Hydrogen 是一個 MIT 授權的開源專案。
       </div>
     </Section>
   );
@@ -526,39 +623,40 @@ function FooterMenu({ menu }: { menu?: EnhancedMenu }) {
     <>
       {(menu?.items || []).map((item) => (
         <section key={item.id} className={styles.section}>
-          <Disclosure>
+          <Menu as="div" className="relative">
             {({ open }) => (
               <>
-                <Disclosure.Button className="text-left md:cursor-default">
-                  <Heading className="flex justify-between" size="lead" as="h3">
+                <Menu.Button className="text-left w-full">
+                  <Heading className="flex justify-between items-center" size="lead" as="h3">
                     {item.title}
                     {item?.items?.length > 0 && (
-                      <span className="md:hidden">
+                      <span className="ml-2">
                         <IconCaret direction={open ? 'up' : 'down'} />
                       </span>
                     )}
                   </Heading>
-                </Disclosure.Button>
-                {item?.items?.length > 0 ? (
-                  <div
-                    className={`${
-                      open ? `max-h-48 h-fit` : `max-h-0 md:max-h-fit`
-                    } overflow-hidden transition-all duration-300`}
-                  >
-                    <Suspense data-comment="This suspense fixes a hydration bug in Disclosure.Panel with static prop">
-                      <Disclosure.Panel static>
-                        <nav className={styles.nav}>
-                          {item.items.map((subItem: ChildEnhancedMenuItem) => (
-                            <FooterLink key={subItem.id} item={subItem} />
-                          ))}
-                        </nav>
-                      </Disclosure.Panel>
-                    </Suspense>
-                  </div>
-                ) : null}
+                </Menu.Button>
+                {item?.items?.length > 0 && (
+                  <Menu.Items className="absolute left-0 mt-2 w-40 origin-top-left bg-white dark:bg-gray-800 divide-y divide-gray-100 rounded-md shadow-lg focus:outline-none">
+                    <div className="py-1">
+                      {item.items.map((subItem: ChildEnhancedMenuItem) => (
+                        <Menu.Item key={subItem.id}>
+                          {({ active }) => (
+                            <FooterLink
+                              item={subItem}
+                              className={`${
+                                active ? 'bg-gray-100 dark:bg-gray-700' : ''
+                              } block px-4 py-2 text-sm text-gray-700 dark:text-gray-200`}
+                            />
+                          )}
+                        </Menu.Item>
+                      ))}
+                    </div>
+                  </Menu.Items>
+                )}
               </>
             )}
-          </Disclosure>
+          </Menu>
         </section>
       ))}
     </>

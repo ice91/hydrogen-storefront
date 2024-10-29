@@ -1,8 +1,7 @@
-// app/routes/($locale).seller.products.$productId.edit.tsx
+// app/routes/($locale).seller.editproducts.[productId].tsx
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from '@remix-run/react';
-import { PageLayout } from '~/components/PageLayout';
 import ProductForm from '~/components/Marketplace/ProductForm';
 import apiClient from '~/lib/apiClient';
 import { Product } from '~/lib/type';
@@ -19,7 +18,7 @@ const EditProduct: React.FC = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!productId) {
-        setError('产品 ID 无效。');
+        setError('產品 ID 無效。');
         setLoading(false);
         return;
       }
@@ -28,8 +27,8 @@ const EditProduct: React.FC = () => {
         const response = await apiClient.get(`/products/${productId}`);
         setProduct(response.data.product);
       } catch (err) {
-        console.error('获取产品详情时出错：', err);
-        setError('无法获取产品详情。');
+        console.error('獲取產品詳情時出錯：', err);
+        setError('無法獲取產品詳情。');
       } finally {
         setLoading(false);
       }
@@ -40,11 +39,9 @@ const EditProduct: React.FC = () => {
 
   if (authLoading || loading) {
     return (
-      <PageLayout>
-        <div className="container mx-auto p-4">
-          <p>加载中...</p>
-        </div>
-      </PageLayout>
+      <div className="container mx-auto p-4">
+        <p>載入中...</p>
+      </div>
     );
   }
 
@@ -54,21 +51,16 @@ const EditProduct: React.FC = () => {
 
   if (error || !product) {
     return (
-      <PageLayout>
-        <div className="container mx-auto p-4">
-          <p className="text-red-500">{error || '产品不存在。'}</p>
-        </div>
-      </PageLayout>
+      <div className="container mx-auto p-4">
+        <p className="text-red-500">{error || '產品不存在。'}</p>
+      </div>
     );
   }
 
   return (
-    <PageLayout>
-      <div className="container mx-auto p-4">
-        <h2 className="text-2xl font-semibold mb-4">编辑产品</h2>
-        <ProductForm product={product} />
-      </div>
-    </PageLayout>
+    <div className="container mx-auto p-4">
+      <ProductForm product={product} />
+    </div>
   );
 };
 

@@ -1,271 +1,196 @@
 // app/components/Marketplace/ProductForm.tsx
 
 import React, { useState, useEffect, FormEvent } from 'react';
-import apiClient from '~/lib/apiClient';
-import { Product, Variant } from '~/lib/type';
-import { useNavigate } from 'react-router-dom';
-import { useSellerAuth } from './SellerAuthProvider';
+import { useNavigate } from '@remix-run/react';
+import { ClientOnly } from '~/components/ClientOnly'; // 使用自定義的 ClientOnly
+import { RichTextEditor } from '~/components/RichTextEditor'; // 使用 RichTextEditor
+import { Product } from '~/lib/type'; // 確保你有正確定義 Product 類型
 
-interface Props {
-  product?: Product;
-}
+type ProductFormProps = {
+  product?: Product; // 如果是編輯，則傳入 product
+};
 
-const ProductForm: React.FC<Props> = ({ product }) => {
-  const { user } = useSellerAuth();
+const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState<string>(product?.title || '');
-  const [description, setDescription] = useState<string>(product?.description || '');
-  const [price, setPrice] = useState<number>(product?.price || 0);
-  const [templateId, setTemplateId] = useState<string>(product?.providerProductId || '');
-  const [variants, setVariants] = useState<Variant[]>(product?.variants || []);
-  const [images, setImages] = useState<string[]>(product?.images || []);
+  // 表單狀態
+  const [name, setName] = useState(product?.name || '');
+  const [price, setPrice] = useState(product?.price.toString() || '');
+  const [description, setDescription] = useState(product?.description || '');
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>(product?.tags || []);
-  const [status, setStatus] = useState<'draft' | 'published'>(product?.status || 'draft');
-
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 处理表单提交
+  // 處理圖片預覽
+  useEffect(() => {
+    if (images.length === 0) {
+      setImagePreviews([]);
+      return;
+    }
+
+    const newImagePreviews = images.map((image) => URL.createObjectURL(image));
+    setImagePreviews(newImagePreviews);
+
+    // 清除 URL 對象以釋放內存
+    return () => {
+      newImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [images]);
+
+  // 處理表單提交
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const productData = {
-      title,
-      description,
-      price,
-      templateId,
-      variants,
-      images,
-      tags,
-      status,
-    };
-
     try {
-      if (product) {
-        // 更新产品
-        await apiClient.put(`/products/${product._id}`, productData);
-        alert('产品更新成功');
-      } else {
-        // 创建产品
-        await apiClient.post('/products', productData);
-        alert('产品创建成功');
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('price', price);
+      formData.append('description', description);
+      formData.append('tags', JSON.stringify(tags));
+
+      images.forEach((image, index) => {
+        formData.append(`images[${index}]`, image);
+      });
+
+      const response = await fetch(
+        product ? `/api/products/${product.id}` : '/api/products',
+        {
+          method: product ? 'PUT' : 'POST',
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '提交失敗');
       }
-      navigate('/seller/products');
-    } catch (err) {
-      console.error('提交产品时出错：', err);
-      setError('提交产品时出错。请稍后再试。');
+
+      // 重定向到產品列表或產品詳情頁
+      navigate(product ? `/products/${product.id}` : '/products');
+    } catch (err: any) {
+      setError(err.message || '提交失敗');
     } finally {
       setLoading(false);
     }
   };
 
-  // 添加一个新的变体
-  const addVariant = () => {
-    setVariants([...variants, { title: '', options: {} }]);
-  };
-
-  // 更新变体
-  const updateVariant = (index: number, updatedVariant: Variant) => {
-    const newVariants = [...variants];
-    newVariants[index] = updatedVariant;
-    setVariants(newVariants);
-  };
-
-  // 删除变体
-  const deleteVariant = (index: number) => {
-    const newVariants = variants.filter((_, i) => i !== index);
-    setVariants(newVariants);
+  // 處理圖片選擇
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const selectedFiles = Array.from(e.target.files);
+    setImages((prevImages) => [...prevImages, ...selectedFiles]);
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">{product ? '编辑产品' : '创建新产品'}</h2>
+    <div className="max-w-3xl mx-auto bg-white p-6 rounded-md shadow-md">
+      <h2 className="text-2xl font-semibold mb-4">
+        {product ? '編輯產品' : '創建新產品'}
+      </h2>
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* 标题 */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 基本資訊 */}
         <div>
-          <label className="block text-sm font-medium">标题</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-          />
-        </div>
-
-        {/* 描述 */}
-        <div>
-          <label className="block text-sm font-medium">描述</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-          />
-        </div>
-
-        {/* 价格 */}
-        <div>
-          <label className="block text-sm font-medium">价格</label>
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(parseFloat(e.target.value))}
-            required
-            min="0"
-            step="0.01"
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-          />
-        </div>
-
-        {/* 模板 ID */}
-        <div>
-          <label className="block text-sm font-medium">模板 ID</label>
-          <input
-            type="text"
-            value={templateId}
-            onChange={(e) => setTemplateId(e.target.value)}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-          />
-        </div>
-
-        {/* 状态 */}
-        <div>
-          <label className="block text-sm font-medium">状态</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as 'draft' | 'published')}
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-          >
-            <option value="draft">草稿</option>
-            <option value="published">已发布</option>
-          </select>
-        </div>
-
-        {/* 变体 */}
-        <div>
-          <label className="block text-sm font-medium">变体</label>
-          {variants.map((variant, index) => (
-            <div key={index} className="border border-gray-300 rounded-md p-2 mb-2">
-              <div className="flex justify-between items-center">
-                <span>变体 {index + 1}</span>
-                <button
-                  type="button"
-                  onClick={() => deleteVariant(index)}
-                  className="text-red-500"
-                >
-                  删除
-                </button>
-              </div>
-              <div className="mt-2">
-                <label className="block text-sm">标题</label>
-                <input
-                  type="text"
-                  value={variant.title}
-                  onChange={(e) =>
-                    updateVariant(index, { ...variant, title: e.target.value })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                />
-              </div>
-              {/* 示例：选项，如颜色和尺寸 */}
-              <div className="mt-2">
-                <label className="block text-sm">颜色</label>
-                <input
-                  type="text"
-                  value={variant.options['Color'] || ''}
-                  onChange={(e) =>
-                    updateVariant(index, {
-                      ...variant,
-                      options: { ...variant.options, Color: e.target.value },
-                    })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                />
-              </div>
-              <div className="mt-2">
-                <label className="block text-sm">尺寸</label>
-                <input
-                  type="text"
-                  value={variant.options['Size'] || ''}
-                  onChange={(e) =>
-                    updateVariant(index, {
-                      ...variant,
-                      options: { ...variant.options, Size: e.target.value },
-                    })
-                  }
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-                />
-              </div>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addVariant}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
-          >
-            添加变体
-          </button>
-        </div>
-
-        {/* 图片上传 */}
-        <div>
-          <label className="block text-sm font-medium">图片 URLs</label>
-          {images.map((image, index) => (
-            <div key={index} className="flex items-center mt-1">
+          <h3 className="text-lg font-medium mb-2">基本資訊</h3>
+          <div className="space-y-4">
+            {/* 產品名稱 */}
+            <div>
+              <label className="block text-sm font-medium">名稱</label>
               <input
                 type="text"
-                value={image}
-                onChange={(e) => {
-                  const newImages = [...images];
-                  newImages[index] = e.target.value;
-                  setImages(newImages);
-                }}
-                className="flex-grow border border-gray-300 rounded-md p-2"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
-              <button
-                type="button"
-                onClick={() => {
-                  const newImages = images.filter((_, i) => i !== index);
-                  setImages(newImages);
-                }}
-                className="ml-2 text-red-500"
-              >
-                删除
-              </button>
             </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => setImages([...images, ''])}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md"
-          >
-            添加图片
-          </button>
+            {/* 價格 */}
+            <div>
+              <label className="block text-sm font-medium">價格</label>
+              <input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+                min="0"
+                step="0.01"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              />
+            </div>
+            {/* 描述 */}
+            <div>
+              <label className="block text-sm font-medium">描述</label>
+              <ClientOnly
+                fallback={
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                  />
+                }
+              >
+                <RichTextEditor value={description} onChange={setDescription} />
+              </ClientOnly>
+            </div>
+            {/* 標籤 */}
+            <div>
+              <label className="block text-sm font-medium">標籤</label>
+              <input
+                type="text"
+                value={tags.join(', ')}
+                onChange={(e) =>
+                  setTags(e.target.value.split(',').map((tag) => tag.trim()))
+                }
+                placeholder="用逗號分隔標籤"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              />
+            </div>
+          </div>
         </div>
-
-        {/* 标签 */}
+        {/* 圖片上傳 */}
         <div>
-          <label className="block text-sm font-medium">标签</label>
+          <h3 className="text-lg font-medium mb-2">圖片</h3>
           <input
-            type="text"
-            value={tags.join(', ')}
-            onChange={(e) => setTags(e.target.value.split(',').map(tag => tag.trim()))}
-            placeholder="用逗号分隔标签"
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
+          {/* 圖片預覽 */}
+          <div className="mt-4 flex flex-wrap gap-4">
+            {imagePreviews.map((src, index) => (
+              <div key={index} className="relative w-24 h-24">
+                <img
+                  src={src}
+                  alt={`預覽 ${index}`}
+                  className="w-full h-full object-cover rounded-md"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+                    setImagePreviews(newPreviews);
+                    const newImages = images.filter((_, i) => i !== index);
+                    setImages(newImages);
+                  }}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-
-        {/* 提交按钮 */}
+        {/* 提交按鈕 */}
         <div>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-green-500 text-white rounded-md"
+            className="w-full px-4 py-2 bg-green-500 text-white rounded-md"
           >
             {loading ? '提交中...' : '提交'}
           </button>
