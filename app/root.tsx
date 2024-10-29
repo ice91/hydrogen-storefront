@@ -6,8 +6,6 @@ import {
   type LoaderFunctionArgs,
   type AppLoadContext,
   type MetaArgs,
-  // 移除 HeadersFunction 导入
-  // type HeadersFunction,
 } from '@shopify/remix-oxygen';
 import {
   isRouteErrorResponse,
@@ -43,18 +41,18 @@ import { SellerAuthProvider } from '~/components/Marketplace/SellerAuthProvider'
 
 export type RootLoader = typeof loader;
 
-// This is important to avoid re-fetching root queries on sub-navigations
+// 這個很重要，可以避免在子導航時重新獲取根查詢
 export const shouldRevalidate: ShouldRevalidateFunction = ({
   formMethod,
   currentUrl,
   nextUrl,
 }) => {
-  // revalidate when a mutation is performed e.g add to cart, login...
+  // 當執行變更時重新驗證，例如加入購物車、登錄等
   if (formMethod && formMethod !== 'GET') {
     return true;
   }
 
-  // revalidate when manually revalidating via useRevalidator
+  // 當手動重新驗證時使用 useRevalidator
   if (currentUrl.toString() === nextUrl.toString()) {
     return true;
   }
@@ -77,12 +75,8 @@ export const links: LinksFunction = () => {
   ];
 };
 
-
 export async function loader(args: LoaderFunctionArgs) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
   return defer({
@@ -92,13 +86,13 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 /**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
+ * 加載必要的數據以渲染首屏內容。這是渲染頁面的關鍵數據。
+ * 如果不可用，整個頁面應該返回 400 或 500 錯誤。
  */
 async function loadCriticalData({ request, context }: LoaderFunctionArgs) {
   const [layout] = await Promise.all([
     getLayoutData(context),
-    // Add other queries here, so that they are loaded in parallel
+    // 在此處添加其他查詢，以便並行加載
   ]);
 
   const seo = seoPayload.root({ shop: layout.shop, url: request.url });
@@ -121,9 +115,9 @@ async function loadCriticalData({ request, context }: LoaderFunctionArgs) {
 }
 
 /**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
+ * 加載用於渲染首屏以下內容的數據。這些數據是延遲加載的，將在初始頁面加載後獲取。
+ * 如果不可用，頁面仍應返回 200。
+ * 確保不在此處拋出任何錯誤，因為這將導致頁面返回 500。
  */
 function loadDeferredData({ context }: LoaderFunctionArgs) {
   const { cart, customerAccount } = context;
@@ -140,7 +134,7 @@ export const meta = ({ data }: MetaArgs<typeof loader>) => {
 
 function Layout({ children }: { children?: React.ReactNode }) {
   const nonce = useNonce();
-  const data = useRouteLoaderData<typeof loader>("root");
+  const data = useRouteLoaderData<typeof loader>('root');
   const locale = data?.selectedLocale ?? DEFAULT_LOCALE;
 
   return (
@@ -190,11 +184,11 @@ export function ErrorBoundary({ error }: { error: Error }) {
   const routeError = useRouteError();
   const isRouteError = isRouteErrorResponse(routeError);
 
-  let title = "Error";
-  let pageType = "page";
+  let title = "錯誤";
+  let pageType = "頁面";
 
   if (isRouteError) {
-    title = "Not found";
+    title = "找不到";
     if (routeError.status === 404) pageType = routeError.data || pageType;
   }
 
@@ -282,12 +276,12 @@ async function getLayoutData({ storefront, env }: AppLoadContext) {
     },
   });
 
-  invariant(data, "No data returned from Shopify API");
+  invariant(data, "沒有從 Shopify API 返回數據");
 
   /*
-    Modify specific links/routes (optional)
+    修改特定的鏈接/路由（可選）
     @see: https://shopify.dev/api/storefront/unstable/enums/MenuItemType
-    e.g here we map:
+    例如這裡我們映射：
       - /blogs/news -> /news
       - /blog/news/blog-post -> /news/blog-post
       - /collections/all -> /products
@@ -314,5 +308,3 @@ async function getLayoutData({ storefront, env }: AppLoadContext) {
 
   return { shop: data.shop, headerMenu, footerMenu };
 }
-
-

@@ -21,7 +21,7 @@ export default defineConfig({
   base: '/', // 确保 base 设置为根路径
   ssr: {
     optimizeDeps: {
-      include: ['typographic-base'],
+      include: ['react-quill', 'typographic-base'],
     },
   },
   optimizeDeps: {
