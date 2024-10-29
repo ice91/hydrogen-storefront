@@ -13,9 +13,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange 
     Promise.all([
       import('react-quill'),
       import('react-quill/dist/quill.snow.css'),
-    ]).then(([quillModule]) => {
-      setReactQuill(quillModule.default);
-    });
+    ])
+      .then(([quillModule]) => {
+        const Quill = quillModule.default || quillModule;
+        setReactQuill(() => Quill);
+      })
+      .catch((error) => {
+        console.error('Failed to load ReactQuill:', error);
+      });
   }, []);
 
   if (!ReactQuill) {

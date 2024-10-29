@@ -1,4 +1,4 @@
-// app/routes/($locale)/seller/products/new.tsx
+// app/routes/($locale).seller.newproducts.tsx
 
 import React from 'react';
 import ProductForm from '~/components/Marketplace/ProductForm';

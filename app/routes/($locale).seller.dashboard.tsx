@@ -15,7 +15,7 @@ const SellerDashboard: React.FC = () => {
     return (
       <PageLayout>
         <div className="container mx-auto p-4">
-          <p>加载中...</p>
+          <p>載入中...</p>
         </div>
       </PageLayout>
     );
@@ -29,7 +29,7 @@ const SellerDashboard: React.FC = () => {
     <PageLayout>
       <div className="container mx-auto p-4 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">欢迎, {user.name}!</h1>
+          <h1 className="text-3xl font-bold">歡迎, {user.name}!</h1>
           <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-md">
             退出登录
           </button>

@@ -1,4 +1,4 @@
-// app/routes/($locale)/seller/products/index.tsx
+// app/routes/($locale).seller.products.tsx
 
 import React from 'react';
 import ProductList from '~/components/Marketplace/ProductList';

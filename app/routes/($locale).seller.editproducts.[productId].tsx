@@ -1,4 +1,4 @@
-// app/routes/($locale).seller.products.$productId.edit.tsx
+// app/routes/($locale).seller.editproducts.[productId].tsx
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from '@remix-run/react';
