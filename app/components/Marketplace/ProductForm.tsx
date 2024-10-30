@@ -2,10 +2,10 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { ClientOnly } from '~/components/ClientOnly';
 import { RichTextEditor } from '~/components/RichTextEditor';
-import { Product } from '~/lib/type';
+import { Product } from '~/lib/types/Product'; // 確保有正確定義 Product 類型
 
 type ProductFormProps = {
-  product?: Product;
+  product?: Product; // 如果是編輯，則傳入 product
 };
 
 const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
@@ -17,8 +17,27 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   const [description, setDescription] = useState(product?.description || '');
   const [templateId, setTemplateId] = useState(product?.templateId || '');
   const [tags, setTags] = useState<string[]>(product?.tags || []);
+  const [categoryIds, setCategoryIds] = useState<string[]>(product?.categories.map(cat => cat.toString()) || []);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 處理圖片預覽
+  useEffect(() => {
+    if (images.length === 0) {
+      setImagePreviews([]);
+      return;
+    }
+
+    const newImagePreviews = images.map((image) => URL.createObjectURL(image));
+    setImagePreviews(newImagePreviews);
+
+    // 清除 URL 對象以釋放內存
+    return () => {
+      newImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [images]);
 
   // 處理表單提交
   const handleSubmit = async (e: FormEvent) => {
@@ -27,36 +46,48 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
     setError(null);
 
     try {
-      // 構建請求數據對象
-      const requestData: any = {
-        title,
-        price: parseFloat(price),
-        description,
-        tags,
-        templateId,
-      };
+      // 構建 FormData 對象
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('price', price);
+      formData.append('description', description);
+      formData.append('templateId', templateId);
+      formData.append('tags', JSON.stringify(tags));
+      formData.append('categoryIds', JSON.stringify(categoryIds));
 
-      // 發送 POST 請求
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
+      images.forEach((image, index) => {
+        formData.append(`images[${index}]`, image);
       });
+
+      // 發送 POST 或 PUT 請求
+      const response = await fetch(
+        product ? `/api/products/${product.id}` : '/api/products',
+        {
+          method: product ? 'PUT' : 'POST',
+          body: formData,
+          credentials: 'include', // 確保攜帶 Cookie
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || '提交失敗');
       }
 
-      // 重定向到產品列表
-      navigate('/seller/products');
+      // 重定向到產品列表或產品詳情頁
+      navigate(product ? `/products/${product.id}` : '/seller/products');
     } catch (err: any) {
       setError(err.message || '提交失敗');
     } finally {
       setLoading(false);
     }
+  };
+
+  // 處理圖片選擇
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const selectedFiles = Array.from(e.target.files);
+    setImages((prevImages) => [...prevImages, ...selectedFiles]);
   };
 
   return (
@@ -133,6 +164,54 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
             </div>
+            {/* 類別 ID */}
+            <div>
+              <label className="block text-sm font-medium">類別 ID</label>
+              <input
+                type="text"
+                value={categoryIds.join(', ')}
+                onChange={(e) =>
+                  setCategoryIds(e.target.value.split(',').map((id) => id.trim()))
+                }
+                placeholder="用逗號分隔類別 ID"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              />
+            </div>
+          </div>
+        </div>
+        {/* 圖片上傳 */}
+        <div>
+          <h3 className="text-lg font-medium mb-2">圖片</h3>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {/* 圖片預覽 */}
+          <div className="mt-4 flex flex-wrap gap-4">
+            {imagePreviews.map((src, index) => (
+              <div key={index} className="relative w-24 h-24">
+                <img
+                  src={src}
+                  alt={`預覽 ${index}`}
+                  className="w-full h-full object-cover rounded-md"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+                    setImagePreviews(newPreviews);
+                    const newImages = images.filter((_, i) => i !== index);
+                    setImages(newImages);
+                  }}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
           </div>
         </div>
         {/* 提交按鈕 */}
