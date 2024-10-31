@@ -1,10 +1,8 @@
-// app/components/Marketplace/ProductForm.tsx
-
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
-import { ClientOnly } from '~/components/ClientOnly'; // 使用自定義的 ClientOnly
-import { RichTextEditor } from '~/components/RichTextEditor'; // 使用 RichTextEditor
-import { Product } from '~/lib/type'; // 確保你有正確定義 Product 類型
+import { ClientOnly } from '~/components/ClientOnly';
+import { RichTextEditor } from '~/components/RichTextEditor';
+import { Product } from '~/lib/types/Product'; // 確保有正確定義 Product 類型
 
 type ProductFormProps = {
   product?: Product; // 如果是編輯，則傳入 product
@@ -14,12 +12,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   const navigate = useNavigate();
 
   // 表單狀態
-  const [name, setName] = useState(product?.name || '');
+  const [title, setTitle] = useState(product?.title || '');
   const [price, setPrice] = useState(product?.price.toString() || '');
   const [description, setDescription] = useState(product?.description || '');
+  const [templateId, setTemplateId] = useState(product?.templateId || '');
+  const [tags, setTags] = useState<string[]>(product?.tags || []);
+  const [categoryIds, setCategoryIds] = useState<string[]>(product?.categories.map(cat => cat.toString()) || []);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [tags, setTags] = useState<string[]>(product?.tags || []);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,31 +46,36 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
     setError(null);
 
     try {
+      // 構建 FormData 對象
       const formData = new FormData();
-      formData.append('name', name);
+      formData.append('title', title);
       formData.append('price', price);
       formData.append('description', description);
+      formData.append('templateId', templateId);
       formData.append('tags', JSON.stringify(tags));
+      formData.append('categoryIds', JSON.stringify(categoryIds));
 
       images.forEach((image, index) => {
         formData.append(`images[${index}]`, image);
       });
 
+      // 發送 POST 或 PUT 請求
       const response = await fetch(
         product ? `/api/products/${product.id}` : '/api/products',
         {
           method: product ? 'PUT' : 'POST',
           body: formData,
+          credentials: 'include', // 確保攜帶 Cookie
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '提交失敗');
+        throw new Error(errorData.error || '提交失敗');
       }
 
       // 重定向到產品列表或產品詳情頁
-      navigate(product ? `/products/${product.id}` : '/products');
+      navigate(product ? `/products/${product.id}` : '/seller/products');
     } catch (err: any) {
       setError(err.message || '提交失敗');
     } finally {
@@ -101,8 +106,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
               <label className="block text-sm font-medium">名稱</label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
@@ -117,6 +122,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                 required
                 min="0"
                 step="0.01"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              />
+            </div>
+            {/* 模板 ID */}
+            <div>
+              <label className="block text-sm font-medium">模板 ID</label>
+              <input
+                type="text"
+                value={templateId}
+                onChange={(e) => setTemplateId(e.target.value)}
+                required
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
             </div>
@@ -145,6 +161,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                   setTags(e.target.value.split(',').map((tag) => tag.trim()))
                 }
                 placeholder="用逗號分隔標籤"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              />
+            </div>
+            {/* 類別 ID */}
+            <div>
+              <label className="block text-sm font-medium">類別 ID</label>
+              <input
+                type="text"
+                value={categoryIds.join(', ')}
+                onChange={(e) =>
+                  setCategoryIds(e.target.value.split(',').map((id) => id.trim()))
+                }
+                placeholder="用逗號分隔類別 ID"
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
             </div>
