@@ -45,6 +45,16 @@ export default async function handleRequest(
       'https://canvastalk-867062847423.asia-east1.run.app',
       //context.env.VITE_BACKEND_BASE_URL, // 添加后端域名
     ],
+    // 添加以下 imgSrc 設定
+    imgSrc: [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://cdn.shopify.com',
+      'https://shopify.com',
+      'https://canvastalk-867062847423.asia-east1.run.app',
+      'https://40ed06-12.myshopify.com',
+    ],
   });
 
   const body = await renderToReadableStream(

@@ -1,3 +1,5 @@
+// app/components/Marketplace/ProductForm.tsx
+
 import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { ClientOnly } from '~/components/ClientOnly';
