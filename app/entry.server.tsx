@@ -52,6 +52,7 @@ export default async function handleRequest(
       'blob:',
       'https://cdn.shopify.com',
       'https://shopify.com',
+      'https://storage.googleapis.com',
       'https://canvastalk-867062847423.asia-east1.run.app',
       'https://40ed06-12.myshopify.com',
     ],
