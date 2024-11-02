@@ -63,7 +63,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       });
 
       // 使用 apiClient 發送 POST 或 PUT 請求
-      const url = product ? `/api/products/${product._id}` : '/api/products';
+      const url = product ? `/products/${product._id}` : '/products';
       const method = product ? 'put' : 'post';
 
       const response = await apiClient({
