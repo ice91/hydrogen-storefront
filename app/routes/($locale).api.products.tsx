@@ -1,3 +1,4 @@
+// app/routes/($locale).api.products.tsx
 import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import type {ProductSortKeys} from '@shopify/hydrogen/storefront-api-types';
 import {flattenConnection} from '@shopify/hydrogen';
