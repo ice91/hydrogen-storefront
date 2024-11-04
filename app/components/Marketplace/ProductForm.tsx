@@ -82,18 +82,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       }
 
       // 提示用戶
-<<<<<<< HEAD
-      alert('產品創建請求已提交，正在處理中。請稍後刷新查看產品狀態。');
-
-
-      // 重定向到产品列表或产品详情页
-      navigate(product ? `/products/${product.id}` : '/seller/products');
-=======
       alert(product ? '產品更新成功。' : '產品創建請求已提交，正在處理中。請稍後刷新查看產品狀態。');
 
       // 重定向到產品列表或產品詳情頁
       navigate('/seller/dashboard');
->>>>>>> 3e66b6922c162960c3def464068a5c4bd1ddc87c
     } catch (err: any) {
       // 處理錯誤，確保從響應中提取錯誤信息
       const errorMessage = err.response?.data?.error || err.message || '提交失敗';
