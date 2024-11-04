@@ -7,6 +7,12 @@ import { RichTextEditor } from '~/components/RichTextEditor';
 import { Product } from '~/lib/types/Product'; // 確保有正確定義 Product 類型
 import apiClient from '~/lib/apiClient'; // 導入已配置的 axios 實例
 
+type ImageType = {
+  id: string; // 唯一標識符，可以是 URL 或生成的 ID
+  url?: string; // 已有圖片的 URL
+  file?: File; // 新上傳的圖片檔案
+};
+
 type ProductFormProps = {
   product?: Product; // 如果是編輯，則傳入 product
 };
@@ -20,27 +26,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   const [description, setDescription] = useState(product?.description || '');
   const [templateId, setTemplateId] = useState(product?.templateId || '');
   const [tags, setTags] = useState<string[]>(product?.tags || []);
-  const [categoryIds, setCategoryIds] = useState<string[]>(product?.categories.map(cat => cat.toString()) || []);
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [categoryIds, setCategoryIds] = useState<string[]>(product?.categories?.map(cat => cat.toString()) || []);
+  const [images, setImages] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 處理圖片預覽
+  // 初始化圖片狀態
   useEffect(() => {
-    if (images.length === 0) {
-      setImagePreviews([]);
-      return;
+    if (product && product.images && product.images.length > 0) {
+      const existingImages = product.images.map((url) => ({ id: url, url }));
+      setImages(existingImages);
     }
-
-    const newImagePreviews = images.map((image) => URL.createObjectURL(image));
-    setImagePreviews(newImagePreviews);
-
-    // 清除 URL 對象以釋放內存
-    return () => {
-      newImagePreviews.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [images]);
+  }, [product]);
 
   // 處理表單提交
   const handleSubmit = async (e: FormEvent) => {
@@ -58,12 +55,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       formData.append('tags', JSON.stringify(tags));
       formData.append('categoryIds', JSON.stringify(categoryIds));
 
-      images.forEach((image, index) => {
-        formData.append(`images[${index}]`, image);
+      // 處理已有圖片和新上傳的圖片
+      const existingImageUrls = images.filter((img) => img.url).map((img) => img.url);
+      formData.append('existingImages', JSON.stringify(existingImageUrls));
+
+      images.filter((img) => img.file).forEach((img, index) => {
+        formData.append(`images[${index}]`, img.file!);
       });
 
       // 使用 apiClient 發送 POST 或 PUT 請求
-      const url = product ? `/api/products/${product._id}` : '/api/products';
+      const url = product ? `/products/${product._id}` : '/products';
       const method = product ? 'put' : 'post';
 
       const response = await apiClient({
@@ -81,10 +82,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       }
 
       // 提示用戶
-      alert('產品創建請求已提交，正在處理中。請稍後刷新查看產品狀態。');
+      alert(product ? '產品更新成功。' : '產品創建請求已提交，正在處理中。請稍後刷新查看產品狀態。');
 
       // 重定向到產品列表或產品詳情頁
-      navigate('/seller/products');
+      navigate('/seller/dashboard');
     } catch (err: any) {
       // 處理錯誤，確保從響應中提取錯誤信息
       const errorMessage = err.response?.data?.error || err.message || '提交失敗';
@@ -101,7 +102,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const selectedFiles = Array.from(e.target.files);
-    setImages((prevImages) => [...prevImages, ...selectedFiles]);
+    const newImages = selectedFiles.map((file) => ({
+      id: URL.createObjectURL(file),
+      file,
+    }));
+    setImages((prevImages) => [...prevImages, ...newImages]);
+  };
+
+  // 處理圖片預覽和刪除
+  const handleRemoveImage = (index: number) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -205,21 +215,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
           />
           {/* 圖片預覽 */}
           <div className="mt-4 flex flex-wrap gap-4">
-            {imagePreviews.map((src, index) => (
-              <div key={index} className="relative w-24 h-24">
+            {images.map((image, index) => (
+              <div key={image.id} className="relative w-24 h-24">
                 <img
-                  src={src}
+                  src={image.url || URL.createObjectURL(image.file!)}
                   alt={`預覽 ${index}`}
                   className="w-full h-full object-cover rounded-md"
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-                    setImagePreviews(newPreviews);
-                    const newImages = images.filter((_, i) => i !== index);
-                    setImages(newImages);
-                  }}
+                  onClick={() => handleRemoveImage(index)}
                   className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
                 >
                   &times;
