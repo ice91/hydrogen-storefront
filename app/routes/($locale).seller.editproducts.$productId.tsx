@@ -1,10 +1,10 @@
-// app/routes/($locale).seller.editproducts.[productId].tsx
+// app/routes/($locale).seller.editproducts.$productId.tsx
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from '@remix-run/react';
 import ProductForm from '~/components/Marketplace/ProductForm';
 import apiClient from '~/lib/apiClient';
-import { Product } from '~/lib/type';
+import type { Product } from '~/lib/types/Product';
 import { useSellerAuth } from '~/components/Marketplace/SellerAuthProvider';
 import { Navigate } from '@remix-run/react';
 

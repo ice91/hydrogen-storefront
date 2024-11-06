@@ -28,3 +28,4 @@ const NewProduct: React.FC = () => {
 };
 
 export default NewProduct;
+

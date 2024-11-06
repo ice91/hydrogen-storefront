@@ -1,3 +1,5 @@
+// app/lib/type.ts
+
 import type {Storefront as HydrogenStorefront} from '@shopify/hydrogen';
 import type {
   CountryCode,
@@ -96,3 +98,43 @@ export interface TrackingCode {
   facilityId: string;
 }
 
+// app/lib/types/ProductTemplate.ts
+
+export interface ProductTemplate {
+  templateId: string;
+  templateName: string;
+  title: string;
+  description: string;
+  previewUrl: string;
+  productType?: string;
+  vendor?: string;
+  variants: VariantObject[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VariantObject {
+  id: string;
+  title: string;
+  productUid: string;
+  variantOptions: VariantOptionObject[];
+  imagePlaceholders: ImagePlaceholderObject[];
+  textPlaceholders?: TextPlaceholderObject[];
+}
+
+export interface VariantOptionObject {
+  name: string;
+  value: string;
+}
+
+export interface ImagePlaceholderObject {
+  name: string;
+  printArea: string;
+  height: number;
+  width: number;
+}
+
+export interface TextPlaceholderObject {
+  name: string;
+  text: string;
+}
