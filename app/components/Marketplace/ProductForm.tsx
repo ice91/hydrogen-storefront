@@ -1,5 +1,3 @@
-// app/components/Marketplace/ProductForm.tsx
-
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { ClientOnly } from '~/components/ClientOnly';
@@ -29,7 +27,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   const [templateId, setTemplateId] = useState(product?.templateId || '');
   const [tags, setTags] = useState<string[]>(product?.tags || []);
   const [categoryIds, setCategoryIds] = useState<string[]>(
-    product?.categories?.map(cat => cat.toString()) || []
+    product?.categories?.map((cat) => cat.toString()) || []
   );
   const [images, setImages] = useState<ImageType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,11 +42,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   // 初始化圖片狀態
   useEffect(() => {
     if (product && product.images && product.images.length > 0) {
-      // 假設後端有提供圖片對應的佔位符名稱，這裡暫時使用 'existing' 作為佔位符名稱
-      const existingImages: ImageType[] = product.images.map(url => ({
+      const existingImages: ImageType[] = product.images.map((url, index) => ({
         id: url,
         url,
-        placeholderName: 'existing', // 或根據實際情況調整
+        file: undefined,
+        placeholderName: `existing_${index}`, // 為現有圖片生成唯一的佔位符名稱
       }));
       setImages(existingImages);
     }
@@ -99,7 +97,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       setDescription(selectedTemplate.description || '');
       setTags(selectedTemplate.tags || []);
       setCategoryIds(
-        selectedTemplate.categories ? selectedTemplate.categories.map(cat => cat.toString()) : []
+        selectedTemplate.categories ? selectedTemplate.categories.map((cat) => cat.toString()) : []
       );
     }
   }, [selectedTemplate, product]);
@@ -117,7 +115,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   }, [selectedTemplate]);
 
   // 處理表單提交
-  // 處理表單提交
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -132,25 +129,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       formData.append('tags', JSON.stringify(tags));
       formData.append('categoryIds', JSON.stringify(categoryIds));
 
-      // 新增：在編輯模式下，將原有的圖片 URL 包含在表單數據中
       if (product) {
+        // 編輯模式下，處理圖片
         images.forEach((img) => {
           if (img.url && !img.file) {
+            // 保留現有圖片
             formData.append('existingImages', img.url);
-          }
-        });
-      } else {
-        // 創建模式下，需要包含 templateId 和圖片
-        formData.append('templateId', templateId);
-
-        images.forEach((img) => {
-          if (img.file) {
+          } else if (img.file) {
+            // 添加新上傳的圖片
             formData.append(`images[${img.placeholderName}]`, img.file);
           }
         });
-      }
-
-      if (!product) {
+      } else {
         // 創建模式下，需要包含 templateId 和圖片
         formData.append('templateId', templateId);
 
@@ -210,7 +200,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
     };
     setImages((prevImages) => {
       // 替換已有的佔位符圖片
-      const otherImages = prevImages.filter(img => img.placeholderName !== placeholderName);
+      const otherImages = prevImages.filter((img) => img.placeholderName !== placeholderName);
       return [...otherImages, newImage];
     });
   };
@@ -296,7 +286,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                 type="text"
                 value={tags.join(', ')}
                 onChange={(e) =>
-                  setTags(e.target.value.split(',').map(tag => tag.trim()))
+                  setTags(e.target.value.split(',').map((tag) => tag.trim()))
                 }
                 placeholder="用逗號分隔標籤"
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
@@ -309,7 +299,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                 type="text"
                 value={categoryIds.join(', ')}
                 onChange={(e) =>
-                  setCategoryIds(e.target.value.split(',').map(id => id.trim()))
+                  setCategoryIds(e.target.value.split(',').map((id) => id.trim()))
                 }
                 placeholder="用逗號分隔類別 ID"
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
@@ -318,7 +308,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
           </div>
         </div>
         {/* 圖片上傳 */}
-        {!product && selectedTemplate && placeholderNames.length > 0 && (
+        {selectedTemplate && placeholderNames.length > 0 && (
           <div>
             <h3 className="text-lg font-medium mb-2">圖片上傳</h3>
             {placeholderNames.map((placeholderName) => (
@@ -330,17 +320,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleImageChange(e, placeholderName)}
-                  required
                   className="block w-full text-sm text-gray-500 rounded-md border border-gray-300 p-2"
                 />
                 {/* 圖片預覽 */}
-                {images.find(img => img.placeholderName === placeholderName) && (
+                {images.find((img) => img.placeholderName === placeholderName) && (
                   <div className="mt-2 w-24 h-24">
                     <img
                       src={
-                        images.find(img => img.placeholderName === placeholderName)!.url ||
+                        images.find((img) => img.placeholderName === placeholderName)!.url ||
                         URL.createObjectURL(
-                          images.find(img => img.placeholderName === placeholderName)!.file!
+                          images.find((img) => img.placeholderName === placeholderName)!.file!
                         )
                       }
                       alt={`預覽 ${placeholderName}`}
@@ -360,10 +349,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
               {images.map((image, index) => (
                 <div key={image.id} className="w-24 h-24">
                   <img
-                    src={image.url}
+                    src={
+                      image.file
+                        ? URL.createObjectURL(image.file)
+                        : image.url || '/placeholder.png'
+                    }
                     alt={`圖片 ${index}`}
                     className="w-full h-full object-cover rounded-md"
                   />
+                  {/* 添加圖片刪除按鈕（可選） */}
+                  {/* <button
+                    onClick={() => handleRemoveImage(image.placeholderName)}
+                    className="mt-1 text-red-500 text-xs"
+                  >
+                    刪除
+                  </button> */}
                 </div>
               ))}
             </div>
