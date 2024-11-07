@@ -44,7 +44,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   // 初始化圖片狀態
   useEffect(() => {
     if (product && product.images && product.images.length > 0) {
-      // 假設後端有提供圖片對應的佔位符名稱，這裡暫時使用 'existing' 作為占位符名稱
+      // 假設後端有提供圖片對應的佔位符名稱，這裡暫時使用 'existing' 作為佔位符名稱
       const existingImages: ImageType[] = product.images.map(url => ({
         id: url,
         url,
@@ -58,7 +58,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await apiClient.get('/templates');
+        const response = await apiClient.get('/api/templates');
         setTemplates(response.data.templates);
       } catch (err) {
         console.error('獲取模板列表時出錯：', err);
@@ -78,7 +78,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
         return;
       }
       try {
-        const response = await apiClient.get(`/templates/${templateId}`);
+        const response = await apiClient.get(`/api/templates/${templateId}`);
         setSelectedTemplate(response.data.template);
       } catch (err) {
         console.error('獲取模板詳細信息時出錯：', err);
@@ -89,6 +89,20 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       fetchTemplateDetails();
     }
   }, [templateId, product]);
+
+  // 當選定模板後，更新表單字段
+  useEffect(() => {
+    if (selectedTemplate && !product) {
+      // 僅在表單字段為空時更新，避免覆蓋用戶已填寫的內容
+      if (!title) setTitle(selectedTemplate.title || '');
+      if (!price) setPrice(selectedTemplate.price ? selectedTemplate.price.toString() : '');
+      if (!description) setDescription(selectedTemplate.description || '');
+      if (tags.length === 0) setTags(selectedTemplate.tags || []);
+      if (categoryIds.length === 0 && selectedTemplate.categories) {
+        setCategoryIds(selectedTemplate.categories.map(cat => cat.toString()));
+      }
+    }
+  }, [selectedTemplate, product]);
 
   // 從模板詳細信息中提取圖片佔位符名稱列表
   const placeholderNames = React.useMemo(() => {
@@ -129,7 +143,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       }
 
       // 確定 API 端點和方法
-      const url = product ? `/products/${product._id}` : '/products';
+      const url = product ? `/api/products/${product._id}` : '/api/products';
       const method = product ? 'put' : 'post';
 
       // 發送請求
