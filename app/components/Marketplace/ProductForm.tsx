@@ -117,6 +117,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
   }, [selectedTemplate]);
 
   // 處理表單提交
+  // 處理表單提交
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -130,6 +131,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       formData.append('description', description);
       formData.append('tags', JSON.stringify(tags));
       formData.append('categoryIds', JSON.stringify(categoryIds));
+
+      // 新增：在編輯模式下，將原有的圖片 URL 包含在表單數據中
+      if (product) {
+        images.forEach((img) => {
+          if (img.url && !img.file) {
+            formData.append('existingImages', img.url);
+          }
+        });
+      } else {
+        // 創建模式下，需要包含 templateId 和圖片
+        formData.append('templateId', templateId);
+
+        images.forEach((img) => {
+          if (img.file) {
+            formData.append(`images[${img.placeholderName}]`, img.file);
+          }
+        });
+      }
 
       if (!product) {
         // 創建模式下，需要包含 templateId 和圖片
