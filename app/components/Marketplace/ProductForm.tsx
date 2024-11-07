@@ -4,8 +4,8 @@ import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from '@remix-run/react';
 import { ClientOnly } from '~/components/ClientOnly';
 import { RichTextEditor } from '~/components/RichTextEditor';
-import type { Product } from '~/lib/types';
-import type { ProductTemplate } from '~/lib/types';
+import type { Product } from '~/lib/types/Product';
+import type { ProductTemplate } from '~/lib/types/ProductTemplate';
 import apiClient from '~/lib/apiClient';
 
 type ImageType = {
@@ -298,7 +298,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                   accept="image/*"
                   onChange={(e) => handleImageChange(e, placeholderName)}
                   required
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="block w-full text-sm text-gray-500 rounded-md border border-gray-300 p-2"
                 />
                 {/* 圖片預覽 */}
                 {images.find(img => img.placeholderName === placeholderName) && (
