@@ -1,7 +1,7 @@
 // app/components/Marketplace/ProductCard.tsx
 
 import React from 'react';
-import { Product } from '~/lib/type';
+import { Product } from '~/lib/types/Product';
 import { Link } from '@remix-run/react';
 import apiClient from '~/lib/apiClient';
 import { useSellerAuth } from './SellerAuthProvider';
@@ -40,10 +40,10 @@ const ProductCard: React.FC<Props> = ({ product }) => {
         {/* 狀態標籤 */}
         <span
           className={`inline-block mt-2 px-2 py-1 text-xs font-medium rounded ${
-            product.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+            product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
           }`}
         >
-          {product.status === 'published' ? '已發布' : '草稿'}
+          {product.status === 'active' ? '已發布' : '草稿'}
         </span>
         <div className="mt-4 flex justify-between items-center">
           <div className="flex space-x-2">
@@ -61,13 +61,17 @@ const ProductCard: React.FC<Props> = ({ product }) => {
             </button>
           </div>
           {/* 預覽鏈接 */}
-          <Link
-            to={`/products/${product._id}`}
-            target="_blank"
-            className="text-sm text-blue-500 hover:underline"
-          >
-            預覽
-          </Link>
+          {product.handle ? (
+            <Link
+              to={`/products/${product.handle}`}
+              target="_blank"
+              className="text-sm text-blue-500 hover:underline"
+            >
+              預覽
+            </Link>
+          ) : (
+            <span className="text-sm text-gray-500">無法預覽</span>
+          )}
         </div>
       </div>
     </div>
