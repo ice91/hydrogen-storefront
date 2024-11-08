@@ -44,7 +44,6 @@ export interface Product {
   title: string;
   description: string;
   images: string[];
-  price: number;
   provider: string; // 例如: 'Gelato'
   providerProductId?: string; // Gelato 上的產品 ID
   shopifyProductId?: string; // Shopify 上的產品 ID
