@@ -36,7 +36,6 @@ const ProductCard: React.FC<Props> = ({ product }) => {
       <div className="p-4">
         <h3 className="text-lg font-semibold">{product.title}</h3>
         <p className="text-gray-600 mt-1 line-clamp-2">{product.description}</p>
-        <p className="mt-2 text-xl font-bold text-green-600">${product.price.toFixed(2)}</p>
         {/* 狀態標籤 */}
         <span
           className={`inline-block mt-2 px-2 py-1 text-xs font-medium rounded ${
