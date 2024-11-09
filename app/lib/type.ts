@@ -1,6 +1,6 @@
 // app/lib/type.ts
 
-import type {Storefront as HydrogenStorefront} from '@shopify/hydrogen';
+import type { Storefront as HydrogenStorefront } from '@shopify/hydrogen';
 import type {
   CountryCode,
   CurrencyCode,
@@ -26,8 +26,7 @@ export type I18nLocale = Locale & {
 
 export type Storefront = HydrogenStorefront<I18nLocale>;
 
-// app/lib/type.ts
-
+// 用戶資訊
 export interface User {
   _id: string;
   username?: string;
@@ -38,6 +37,7 @@ export interface User {
   updatedAt: string;
 }
 
+// 產品資訊
 export interface Product {
   _id: string;
   userId: string;
@@ -46,25 +46,19 @@ export interface Product {
   images: string[];
   //price: number;
   provider: string; // 例如: 'Gelato'
-  providerProductId?: string;
-  shopifyProductId?: string;
+  providerProductId?: string; // Gelato 上的產品 ID
+  shopifyProductId?: string; // Shopify 上的產品 ID
+  handle?: string; // Shopify 上的 handle
   productType: string;
-  variants?: Variant[];
+  variants?: VariantObject[]; // 參照 ProductTemplate 的 VariantObject
   tags?: string[];
   categories?: string[];
-  status: 'draft' | 'published';
+  status?: 'pending' | 'active' | 'creating' | 'failed'; // 狀態包含新的選項
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Variant {
-  variantId?: string;
-  title: string;
-  options: Record<string, string>; // 例如: { Color: 'Red', Size: 'M' }
-  imageUrl?: string;
-  price?: number;
-}
-
+// 訂單資訊
 export interface Order {
   _id: string;
   sellerId: string;
@@ -78,6 +72,7 @@ export interface Order {
   updatedAt: string;
 }
 
+// 訂單項目資訊
 export interface OrderItem {
   productId: string;
   variantId?: string;
@@ -88,6 +83,7 @@ export interface OrderItem {
   trackingCodes?: TrackingCode[];
 }
 
+// 追蹤代碼資訊
 export interface TrackingCode {
   code: string;
   url: string;
@@ -98,27 +94,11 @@ export interface TrackingCode {
   facilityId: string;
 }
 
-// app/lib/types/ProductTemplate.ts
-
-export interface ProductTemplate {
-  templateId: string;               // 模板ID
-  templateName: string;             // 模板名稱
-  title: string;                    // 產品標題
-  description: string;              // 產品描述
-  previewUrl: string;               // 預覽圖片URL
-  productType?: string;             // 產品類型（可選）
-  vendor?: string;                  // 廠商名稱（可選）
-  //price?: number;                   // 模板價格（可選）
-  category?: string;                // 模板類別（可選）
-  variants: VariantObject[];        // 變體列表
-  createdAt: string;                // 創建時間
-  updatedAt: string;                // 更新時間
-}
-
+// 變體資訊 (擴展至 ProductTemplate)
 export interface VariantObject {
-  id: string;                       // 變體ID
+  id: string;                       // 變體 ID
   title: string;                    // 變體標題
-  productUid: string;               // 產品UID
+  productUid: string;               // 產品 UID
   variantOptions: VariantOptionObject[];   // 變體選項列表
   imagePlaceholders: ImagePlaceholderObject[]; // 圖片佔位符列表
   textPlaceholders?: TextPlaceholderObject[];   // 文字佔位符列表（可選）
