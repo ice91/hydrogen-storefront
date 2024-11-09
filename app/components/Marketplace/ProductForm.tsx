@@ -24,7 +24,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
 
   // 表單狀態
   const [title, setTitle] = useState(product?.title || '');
-  const [price, setPrice] = useState(product?.price.toString() || '');
+  //const [price, setPrice] = useState(product?.price.toString() || '');
   const [description, setDescription] = useState(product?.description || '');
   const [templateId, setTemplateId] = useState(product?.templateId || '');
   const [tags, setTags] = useState<string[]>(product?.tags || []);
@@ -95,7 +95,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
     if (selectedTemplate && !product) {
       // 更新表單字段，使用 selectedTemplate 中的值
       setTitle(selectedTemplate.title || '');
-      setPrice(selectedTemplate.price ? selectedTemplate.price.toString() : '');
+      //setPrice(selectedTemplate.price ? selectedTemplate.price.toString() : '');
       setDescription(selectedTemplate.description || '');
       setTags(selectedTemplate.tags || []);
       setCategoryIds(
@@ -126,7 +126,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
       // 構建 FormData 對象
       const formData = new FormData();
       formData.append('title', title);
-      formData.append('price', price);
+      //formData.append('price', price);
       formData.append('description', description);
       formData.append('tags', JSON.stringify(tags));
       formData.append('categoryIds', JSON.stringify(categoryIds));
@@ -226,19 +226,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product }) => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              />
-            </div>
-            {/* 價格 */}
-            <div>
-              <label className="block text-sm font-medium">價格</label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-                min="0"
-                step="0.01"
                 className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               />
             </div>

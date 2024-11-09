@@ -44,7 +44,7 @@ export interface Product {
   title: string;
   description: string;
   images: string[];
-  price: number;
+  //price: number;
   provider: string; // 例如: 'Gelato'
   providerProductId?: string;
   shopifyProductId?: string;
@@ -108,7 +108,7 @@ export interface ProductTemplate {
   previewUrl: string;               // 預覽圖片URL
   productType?: string;             // 產品類型（可選）
   vendor?: string;                  // 廠商名稱（可選）
-  price?: number;                   // 模板價格（可選）
+  //price?: number;                   // 模板價格（可選）
   category?: string;                // 模板類別（可選）
   variants: VariantObject[];        // 變體列表
   createdAt: string;                // 創建時間
