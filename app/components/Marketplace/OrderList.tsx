@@ -12,15 +12,15 @@ const OrderList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 获取卖家的订单列表
+  // 獲取賣家的訂單列表
   const fetchOrders = async () => {
     if (!user) return;
     try {
       const response = await apiClient.get('/orders/mine');
       setOrders(response.data.orders);
     } catch (err) {
-      console.error('获取订单列表时出错：', err);
-      setError('无法获取订单列表。');
+      console.error('獲取訂單列表時出錯：', err);
+      setError('無法獲取訂單列表。');
     } finally {
       setLoading(false);
     }
@@ -31,7 +31,7 @@ const OrderList: React.FC = () => {
   }, [user]);
 
   if (authLoading || loading) {
-    return <div>加载中...</div>;
+    return <div>加載中...</div>;
   }
 
   if (error) {
@@ -40,9 +40,9 @@ const OrderList: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-semibold">我的订单</h2>
+      <h2 className="text-2xl font-semibold">我的訂單</h2>
       {orders.length === 0 ? (
-        <p>您尚未收到任何订单。</p>
+        <p>您尚未收到任何訂單。</p>
       ) : (
         <div className="space-y-4">
           {orders.map((order) => (
