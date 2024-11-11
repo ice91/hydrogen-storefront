@@ -55,6 +55,7 @@ export default async function handleRequest(
       'https://storage.googleapis.com',
       'https://canvastalk-867062847423.asia-east1.run.app',
       'https://40ed06-12.myshopify.com',
+      'https://gelato-api-live.s3.eu-west-1.amazonaws.com',
     ],
   });
 

@@ -44,6 +44,10 @@ export interface Product {
   title: string;
   description: string;
   images: string[];
+<<<<<<< HEAD
+=======
+  //price: number;
+>>>>>>> c0c5806b33ca4669d71cb587c68f510a447b2e20
   provider: string; // 例如: 'Gelato'
   providerProductId?: string; // Gelato 上的產品 ID
   shopifyProductId?: string; // Shopify 上的產品 ID
