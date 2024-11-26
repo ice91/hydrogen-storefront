@@ -1,45 +1,57 @@
 // app/components/Marketplace/OrderList.tsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import apiClient from '~/lib/apiClient';
+import OrderCard from './OrderCard';
+import { Order } from '~/lib/type';
+import { useSellerAuth } from './SellerAuthProvider';
 
-interface Order {
-  id: string;
-  customerName: string;
-  total: number;
-  status: string;
-  createdAt: string;
-}
+const OrderList: React.FC = () => {
+  const { user, loading: authLoading } = useSellerAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-interface OrderListProps {
-  orders: Order[];
-}
+  // 獲取賣家的訂單列表
+  const fetchOrders = async () => {
+    if (!user) return;
+    try {
+      const response = await apiClient.get('/orders/mine');
+      setOrders(response.data.orders);
+    } catch (err) {
+      console.error('獲取訂單列表時出錯：', err);
+      setError('無法獲取訂單列表。');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-export const OrderList: React.FC<OrderListProps> = ({ orders }) => {
+  useEffect(() => {
+    fetchOrders();
+  }, [user]);
+
+  if (authLoading || loading) {
+    return <div>加載中...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
   return (
-    <div className="order-list mb-4">
-      <h2 className="text-xl font-semibold mb-2">订单管理</h2>
-      <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b">订单编号</th>
-            <th className="py-2 px-4 border-b">客户姓名</th>
-            <th className="py-2 px-4 border-b">总金额</th>
-            <th className="py-2 px-4 border-b">状态</th>
-            <th className="py-2 px-4 border-b">创建时间</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map(order => (
-            <tr key={order.id}>
-              <td className="py-2 px-4 border-b">{order.id}</td>
-              <td className="py-2 px-4 border-b">{order.customerName}</td>
-              <td className="py-2 px-4 border-b">${order.total.toFixed(2)}</td>
-              <td className="py-2 px-4 border-b">{order.status}</td>
-              <td className="py-2 px-4 border-b">{new Date(order.createdAt).toLocaleString()}</td>
-            </tr>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-semibold">我的訂單</h2>
+      {orders.length === 0 ? (
+        <p>您尚未收到任何訂單。</p>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <OrderCard key={order._id} order={order} />
           ))}
-        </tbody>
-      </table>
+        </div>
+      )}
     </div>
   );
 };
+
+export default OrderList;

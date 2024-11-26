@@ -1,3 +1,5 @@
+// app/routes/($locale).products._index.tsx
+
 import {
   json,
   type MetaArgs,

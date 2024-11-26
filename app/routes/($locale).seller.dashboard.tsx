@@ -1,48 +1,45 @@
-// app/routes/seller/dashboard.tsx
+// app/routes/($locale).seller.dashboard.tsx
 
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "@remix-run/react";
-import { PageLayout } from "~/components/PageLayout";
-import apiClient from "~/lib/apiClient";
+import React from 'react';
+import { PageLayout } from '~/components/PageLayout';
+import { useSellerAuth } from '~/components/Marketplace/SellerAuthProvider';
+import ProductList from '~/components/Marketplace/ProductList';
+import OrderList from '~/components/Marketplace/OrderList';
+import SellerInfo from '~/components/Marketplace/SellerInfo';
+import { Navigate } from '@remix-run/react';
 
-export default function SellerDashboard() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+const SellerDashboard: React.FC = () => {
+  const { user, loading, logout } = useSellerAuth();
 
-  // 根據 Cookie 中的 JWT 獲取用戶信息
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await apiClient.get("/auth/seller/user");
-        console.log("User data fetched:", response.data);
-        setUser(response.data.user); // 根據後端返回的數據結構，可能需要調整
-      } catch (error: any) {
-        console.error("獲取用戶信息時發生錯誤:", error);
-        // 如果未授權，重定向到登錄頁面
-        //navigate("/seller/login");
-      }
-    };
-    fetchUser();
-  }, [navigate]);
-
-  if (!user) {
+  if (loading) {
     return (
       <PageLayout>
         <div className="container mx-auto p-4">
-          <p>Loading seller information...</p>
+          <p>載入中...</p>
         </div>
       </PageLayout>
     );
   }
 
+  /*if (!user || !user.roles.includes('seller')) {
+    return <Navigate to="/seller/login" replace />;
+  }*/
+
   return (
     <PageLayout>
-      <div className="container mx-auto p-4">
-        <h1>歡迎, {user.name}!</h1>
-        <p>您的電子郵件: {user.email}</p>
-        <p>積分: {user.points}</p>
-        <p>推薦碼: {user.code}</p>
+      <div className="container mx-auto p-4 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">歡迎, {user.name}!</h1>
+          <button onClick={logout} className="px-4 py-2 bg-red-500 text-white rounded-md">
+            退出登录
+          </button>
+        </div>
+        <SellerInfo />
+        <ProductList />
+        <OrderList />
       </div>
     </PageLayout>
   );
-}
+};
+
+export default SellerDashboard;
