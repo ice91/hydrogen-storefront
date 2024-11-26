@@ -24,11 +24,7 @@ export default async function handleRequest(
       'https://40ed06-12.myshopify.com',
       'https://canvastalk-867062847423.asia-east1.run.app',
       'https://canvastalk-main-867062847423.asia-east1.run.app',
-<<<<<<< HEAD
-      context.env.VITE_BACKEND_BASE_URL, // 如果有其他需要的域名，可以继续添加
-=======
       //context.env.VITE_BACKEND_BASE_URL, // 如果有其他需要的域名，可以继续添加
->>>>>>> 22a7afcf07d50e30689a15680d68c98034adb418
     ],
     scriptSrc: [
       "'self'",

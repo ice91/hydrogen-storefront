@@ -1,4 +1,4 @@
-// app/components/Marketplace/ProductCard.tsx
+//app/components/Marketplace/ProductCard.tsx
 
 import React from 'react';
 import { Product } from '~/lib/types/Product';
@@ -26,6 +26,9 @@ const ProductCard: React.FC<Props> = ({ product }) => {
     }
   };
 
+  // 移除描述中的 <p> 标签
+  const cleanedDescription = product.description.replace(/^<p>/, '').replace(/<\/p>$/, '');
+
   return (
     <div className="border border-gray-200 rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
       <img
@@ -35,7 +38,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
       />
       <div className="p-4">
         <h3 className="text-lg font-semibold">{product.title}</h3>
-        <p className="text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+        <p className="text-gray-600 mt-1 line-clamp-2">{cleanedDescription}</p>
         {/* 狀態標籤 */}
         <span
           className={`inline-block mt-2 px-2 py-1 text-xs font-medium rounded ${
